@@ -3,6 +3,8 @@ import {
   getAllData, 
   saveItem, 
   deleteItem, 
+  saveTickerNews,
+  clearAllMockData,
   setPlayerOfTheDay, 
   togglePlayerOfTheDay, 
   updateRequestStatus, 
@@ -739,7 +741,7 @@ window.openTickerModal = () => {
     if (!text) return;
     const ticker = currentData.tickerNews || [];
     ticker.unshift(text);
-    await saveItem("tickerNews", ticker);
+    await saveTickerNews(ticker);
     closeAdminModal();
     await loadAdminData();
   };
@@ -749,7 +751,7 @@ window.deleteTickerItem = async (index) => {
   if (confirm("حذف هذا الخبر من الشريط المتحرك؟")) {
     const ticker = currentData.tickerNews || [];
     ticker.splice(index, 1);
-    await saveItem("tickerNews", ticker);
+    await saveTickerNews(ticker);
     await loadAdminData();
   }
 };
@@ -1004,6 +1006,17 @@ function setupBackupHandlers() {
         resetDataToDefaults();
         await loadAdminData();
         alert("تمت استعادة البيانات الافتراضية بنجاح.");
+      }
+    });
+  }
+
+  const clearAllBtn = document.getElementById("btn-clear-all-mock");
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener("click", async () => {
+      if (confirm("🗑️ هل أنت متأكد من رغبتك في مسح وإفراغ جميع البيانات التجريبية العشوائية؟ ستبدأ المنصة فارغة وجاهزة لبياناتك الحقيقية.")) {
+        clearAllMockData();
+        await loadAdminData();
+        alert("✅ تم مسح جميع البيانات التجريبية بنجاح! المنصة الآن فارغة وجاهزة لبياناتك.");
       }
     });
   }

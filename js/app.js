@@ -13,6 +13,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupRegistrationForm();
   setupPlayersFilter();
   setupScrollSpy();
+
+  // Real-time synchronization when admin adds/edits/deletes data
+  window.addEventListener("storage", async () => {
+    await loadAndRenderAll();
+  });
 });
 
 // ==================== 1. PWA REGISTRATION & INSTALL ====================
