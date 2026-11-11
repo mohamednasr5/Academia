@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>أكاديمية مركز شباب الأحمدية لكرة القدم | المنصة الرسمية</title>
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#d4af37">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="أكاديمية الأحمدية">
+  <link rel="apple-touch-icon" href="./images/icons/icon-192.png">
+  <link rel="icon" type="image/jpeg" href="./images/logo.jpg">
+  
+  <!-- Fonts & Styles -->
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- ==================== 1. MAIN HEADER ==================== -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="#home" class="brand-wrap">
+        <img src="./images/logo.jpg" alt="شعار أكاديمية مركز شباب الأحمدية" class="brand-logo">
+        <div class="brand-text">
+          <h1>أكاديمية مركز شباب الأحمدية</h1>
+          <span>صناع الأبطال ونجوم المستقبل</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="nav-links">
+        <a href="#home" class="nav-link active">الرئيسية</a>
+        <a href="#star-of-day" class="nav-link">رجل اليوم ⭐</a>
+        <a href="#coaches" class="nav-link">الجهاز الفني</a>
+        <a href="#trophies" class="nav-link">دولاب البطولات</a>
+        <a href="#schedule" class="nav-link">مواعيد التدريب</a>
+        <a href="#matches" class="nav-link">المباريات والنتائج</a>
+        <a href="#players" class="nav-link">اللاعبون</a>
+        <a href="#news" class="nav-link">الأخبار</a>
+        <a href="#register" class="nav-link">تقديم لاعب</a>
+      </nav>
+
+      <!-- Header Action Buttons -->
+      <div class="header-actions">
+        <button id="pwa-install-btn" class="btn-pwa-install" title="تثبيت التطبيق على جهازك">
+          <span>📲</span> تثبيت التطبيق
+        </button>
+        <a href="./admin.html" class="btn-outline-gold" style="padding: 7px 14px; font-size: 0.85rem;">
+          <span>⚙️</span> لوحة التحكم
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 2. BREAKING NEWS TICKER ==================== -->
+  <div class="ticker-bar">
+    <div class="ticker-label">
+      <span>⚡</span> عاجل الأكاديمية
+    </div>
+    <div class="ticker-marquee-wrap">
+      <div class="ticker-content" id="ticker-news-container">
+        <!-- Ticker items dynamically injected -->
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <!-- ==================== 3. HERO SECTION ==================== -->
+    <section id="home" class="hero-section">
+      <div class="container">
+        <div class="hero-grid">
+          <div class="hero-content">
+            <span class="gold-badge">⚽ أهلاً بكم في الصرح الرياضي الأول</span>
+            <h2 style="margin-top: 15px;">
+              أكاديمية <span class="gold-text">مركز شباب الأحمدية</span> لكرة القدم
+            </h2>
+            <p class="hero-description">
+              نصنع نجوم الغد وفق أحدث البرامج التدريبية المعتمدة وتحت إشراف نخبة من خيرة المدربين الوطنيين. تنمية شاملة للمهارات الفردية، التكتيك الرياضي، وبناء الشخصية القيادية داخل وخارج المستطيل الأخضر.
+            </p>
+            <div class="hero-buttons">
+              <a href="#register" class="btn-gold">
+                <span>📝</span> تقديم وتسجيل لاعب جديد
+              </a>
+              <a href="#schedule" class="btn-outline-gold">
+                <span>🕒</span> جداول ومواعيد التدريب
+              </a>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="hero-stats">
+              <div class="stat-item">
+                <div class="stat-num" id="stat-players-count">6+</div>
+                <div class="stat-label">لاعب موهوب مسجل</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-num" id="stat-trophies-count">4</div>
+                <div class="stat-label">بطولات وكؤوس محققة</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-num" id="stat-coaches-count">3</div>
+                <div class="stat-label">مدربين برخص معتمدة</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Visual Frame -->
+          <div class="hero-visual">
+            <div class="hero-logo-frame">
+              <img src="./images/logo.jpg" alt="شعار الأكاديمية" class="hero-logo-img">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 4. PLAYER OF THE DAY (رجل اليوم) ==================== -->
+    <section id="star-of-day" class="player-of-day-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">لوحة الشرف الذهبية</span>
+          <h2 class="section-title">رجل اليوم في الأكاديمية <span class="gold-text">⭐</span></h2>
+          <p class="section-desc">تكريم خاص لنجم الأكاديمية المتميز خلال الـ 24 ساعة الماضية نظير تفانيه ومستواه الاستثنائي</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div id="potd-container">
+          <!-- Star of the Day injected dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 5. COACHES SECTION (التعريف بالمدرب) ==================== -->
+    <section id="coaches" class="coaches-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">الكوادر الفنية</span>
+          <h2 class="section-title">الجهاز الفني <span class="gold-text">والتدريبي</span></h2>
+          <p class="section-desc">نخبة من المدربين المعتمدين والمؤهلين لصناعة بطل كروي متكامل المهارات والبدن</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="coaches-grid" id="coaches-container">
+          <!-- Coaches Cards Injected Dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 6. TROPHY CABINET (دولاب البطولات) ==================== -->
+    <section id="trophies" class="trophy-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">سجل الإنجازات</span>
+          <h2 class="section-title">دولاب <span class="gold-text">البطولات والكؤوس</span></h2>
+          <p class="section-desc">حصاد التعب والجهد وعزيمة الأبطال على منصات التتويج المحلية والإقليمية</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="trophy-grid" id="trophies-container">
+          <!-- Trophies Injected Dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 7. SCHEDULES (مواعيد العمل والتدريب) ==================== -->
+    <section id="schedule" class="schedule-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">التنظيم الأسبوعي</span>
+          <h2 class="section-title">مواعيد <span class="gold-text">العمل والتدريب</span></h2>
+          <p class="section-desc">جداول الحصص التدريبية الأسبوعية مقسمة بعناية وفق المراحل العمرية والملاعب</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="schedule-grid" id="schedules-container">
+          <!-- Schedules Injected Dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 8. MATCHES & RESULTS ==================== -->
+    <section id="matches" class="matches-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">منافسات الأكاديمية</span>
+          <h2 class="section-title">المباريات <span class="gold-text">والنتائج</span></h2>
+          <p class="section-desc">متابعة حية لمواعيد وتوقيتات اللقاءات القادمة ونتائج وأهداف المباريات السابقة</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="tab-nav">
+          <button class="tab-btn active" id="btn-tab-upcoming" onclick="switchMatchTab('upcoming')">
+            📅 المباريات القادمة
+          </button>
+          <button class="tab-btn" id="btn-tab-results" onclick="switchMatchTab('results')">
+            ⚽ نتائج المباريات
+          </button>
+        </div>
+
+        <div id="matches-upcoming-panel">
+          <!-- Upcoming Matches Injected -->
+        </div>
+
+        <div id="matches-results-panel" style="display: none;">
+          <!-- Results Injected -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 9. PLAYERS ROSTER (عرض اللاعبين) ==================== -->
+    <section id="players" class="players-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">نجوم المستقبل</span>
+          <h2 class="section-title">كتالوج <span class="gold-text">لاعبي الأكاديمية</span></h2>
+          <p class="section-desc">استعرض مواهب ولاعبي الأكاديمية مع أسماء وأعمار ومراكز كل لاعب</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="players-filters" id="players-filters-container">
+          <button class="filter-btn active" data-filter="all">جميع اللاعبين</button>
+          <button class="filter-btn" data-filter="2014-2016">براعم (2014 - 2016)</button>
+          <button class="filter-btn" data-filter="2012-2014">أشبال (2012 - 2014)</button>
+          <button class="filter-btn" data-filter="2010-2012">ناشئين (2010 - 2012)</button>
+          <button class="filter-btn" data-filter="2008-2010">شباب (2008 - 2010)</button>
+        </div>
+
+        <div class="players-grid" id="players-container">
+          <!-- Players Cards Injected -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 10. NEWS SECTION (أخبار الأكاديمية) ==================== -->
+    <section id="news" class="news-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">التغطيات والتقارير</span>
+          <h2 class="section-title">أخبار <span class="gold-text">الأكاديمية</span></h2>
+          <p class="section-desc">أحدث الفعاليات، البطولات، والتقارير الخاصة بأنشطة مركز شباب الأحمدية</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="news-grid" id="news-container">
+          <!-- News Cards Injected -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 11. REGISTRATION FORM (تقديم لاعب جديد) ==================== -->
+    <section id="register" class="registration-section">
+      <div class="container">
+        <div class="section-title-wrap">
+          <span class="gold-badge">انضم إلى أبطالنا</span>
+          <h2 class="section-title">نموذج <span class="gold-text">تقديم لاعب جديد</span></h2>
+          <p class="section-desc">سجل بيانات ابنك الآن وسيتواصل معك الجهاز الفني لتحديد موعد الاختبارات الميدانية</p>
+          <div class="gold-divider"></div>
+        </div>
+
+        <div class="reg-card">
+          <form id="player-reg-form">
+            <div class="reg-form-grid">
+              <div class="form-group">
+                <label class="form-label">اسم اللاعب الرباعي *</label>
+                <input type="text" id="reg-player-name" class="form-input" placeholder="مثال: يوسف أحمد محمد علي" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">تاريخ الميلاد *</label>
+                <input type="date" id="reg-birth-date" class="form-input" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">اسم ولي الأمر *</label>
+                <input type="text" id="reg-parent-name" class="form-input" placeholder="اسم الوالد أو ولي الأمر" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">رقم هاتف ولي الأمر (واتساب) *</label>
+                <input type="tel" id="reg-phone" class="form-input" placeholder="010XXXXXXXX أو 011XXXXXXXX" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">المركز المفضل للاعب</label>
+                <select id="reg-position" class="form-select">
+                  <option value="صانع ألعاب">صانع ألعاب (Playmaker)</option>
+                  <option value="مهاجم صريح">مهاجم صريح (Striker)</option>
+                  <option value="جناح أيمن">جناح أيمن (Winger)</option>
+                  <option value="جناح أيسر">جناح أيسر (Winger)</option>
+                  <option value="لاعب خط وسط">لاعب خط وسط (Midfielder)</option>
+                  <option value="قلب دفاع">قلب دفاع (Defender)</option>
+                  <option value="ظهير أيمن / أيسر">ظهير (Fullback)</option>
+                  <option value="حارس مرمى">حارس مرمى (Goalkeeper)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">القدم المفضلة</label>
+                <select id="reg-foot" class="form-select">
+                  <option value="اليمنى">القدم اليمنى</option>
+                  <option value="اليسرى">القدم اليسرى</option>
+                  <option value="يجيد اللعب بالقدمين">يجيد اللعب بكلتا القدمين</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">عنوان السكن أو القرية</label>
+                <input type="text" id="reg-address" class="form-input" placeholder="مثال: قرية الأحمدية، مركز شباب الأحمدية">
+              </div>
+
+              <div class="form-group full-width">
+                <label class="form-label">أي ملاحظات صحية أو رياضية سابقة</label>
+                <textarea id="reg-notes" class="form-textarea" rows="3" placeholder="هل يمارس أي رياضة أخرى؟ أو هل توجد أي حساسية أو ملاحظات طبية؟"></textarea>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+              <button type="submit" class="btn-gold" style="width: 100%; max-width: 320px; font-size: 1.05rem;">
+                <span>🚀</span> إرسال طلب التقديم الآن
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== 12. FOOTER ==================== -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+            <img src="./images/logo.jpg" alt="شعار الأكاديمية" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--gold-primary);">
+            <h4 style="margin: 0; color: #fff;">أكاديمية مركز شباب الأحمدية</h4>
+          </div>
+          <p>
+            الصرح الكروي الأول لتأهيل وصقل مهارات البراعم والناشئين في بيئة تربوية ورياضية احترافية تحت رعاية مجلس إدارة مركز شباب الأحمدية.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>روابط سريعة</h4>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
+            <li><a href="#star-of-day" style="color: var(--text-muted); text-decoration: none;">⭐ نجم اليوم (لوحة الشرف)</a></li>
+            <li><a href="#schedule" style="color: var(--text-muted); text-decoration: none;">🕒 مواعيد التدريب</a></li>
+            <li><a href="#trophies" style="color: var(--text-muted); text-decoration: none;">🏆 دولاب البطولات</a></li>
+            <li><a href="#register" style="color: var(--text-muted); text-decoration: none;">📝 تقديم لاعب جديد</a></li>
+            <li><a href="./admin.html" style="color: var(--gold-light); text-decoration: none;">⚙️ لوحة تحكم الإدارة</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>العنوان والتواصل</h4>
+          <p>📍 مقر مركز شباب الأحمدية - الملاعب الرياضية</p>
+          <p>📞 هاتف الإدارة: 01000000000</p>
+          <p>📱 واتساب: متوفر للتواصل السريع والاستفسارات</p>
+          <div class="footer-social-links">
+            <a href="https://facebook.com" target="_blank" class="social-icon-btn" title="فيسبوك">📘</a>
+            <a href="https://wa.me/201000000000" target="_blank" class="social-icon-btn" title="واتساب">💬</a>
+            <a href="https://youtube.com" target="_blank" class="social-icon-btn" title="يوتيوب">▶️</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>جميع الحقوق محفوظة © 2026 لأكاديمية مركز شباب الأحمدية لكرة القدم</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== 13. MOBILE BOTTOM NAVIGATION ==================== -->
+  <nav class="mobile-bottom-nav">
+    <a href="#home" class="mobile-nav-item active">
+      <span class="icon">🏠</span>
+      <span>الرئيسية</span>
+    </a>
+    <a href="#matches" class="mobile-nav-item">
+      <span class="icon">⚽</span>
+      <span>المباريات</span>
+    </a>
+    <a href="#register" class="mobile-nav-item highlight-nav">
+      <span class="icon">✍️</span>
+      <span>تقديم</span>
+    </a>
+    <a href="#players" class="mobile-nav-item">
+      <span class="icon">🏃</span>
+      <span>اللاعبون</span>
+    </a>
+    <a href="./admin.html" class="mobile-nav-item">
+      <span class="icon">⚙️</span>
+      <span>الإدارة</span>
+    </a>
+  </nav>
+
+  <!-- News Article Modal -->
+  <div id="news-modal" class="toast-msg" style="display: none;"></div>
+
+  <!-- Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+  
+  <!-- Main Application Logic (ES Module) -->
+  <script type="module" src="./js/app.js"></script>
+
+  <!-- Global tab switcher helper for inline handlers -->
+  <script>
+    function switchMatchTab(tab) {
+      const upBtn = document.getElementById('btn-tab-upcoming');
+      const resBtn = document.getElementById('btn-tab-results');
+      const upPanel = document.getElementById('matches-upcoming-panel');
+      const resPanel = document.getElementById('matches-results-panel');
+      
+      if (tab === 'upcoming') {
+        upBtn.classList.add('active');
+        resBtn.classList.remove('active');
+        upPanel.style.display = 'block';
+        resPanel.style.display = 'none';
+      } else {
+        resBtn.classList.add('active');
+        upBtn.classList.remove('active');
+        upPanel.style.display = 'none';
+        resPanel.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

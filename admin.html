@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>لوحة التحكم الإدارية | أكاديمية مركز شباب الأحمدية</title>
+  
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#d4af37">
+  <link rel="icon" type="image/jpeg" href="./images/logo.jpg">
+  
+  <link rel="stylesheet" href="./css/admin.css">
+</head>
+<body>
+
+  <!-- ==================== 1. LOGIN SCREEN ==================== -->
+  <div id="login-section" class="admin-login-wrap">
+    <div class="admin-login-box">
+      <img src="./images/logo.jpg" alt="شعار الأكاديمية" class="login-logo">
+      <h2 style="font-size: 1.3rem; margin-bottom: 6px; color: #fff;">لوحة تحكم أكاديمية الأحمدية</h2>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 25px;">يرجى إدخال رمز المرور الإداري للمتابعة</p>
+      
+      <form id="admin-login-form">
+        <div class="admin-form-group">
+          <input type="password" id="admin-password" class="admin-input" placeholder="رمز المرور (الافتراضي: ahmadia2026)" required style="text-align: center; font-size: 1.1rem; letter-spacing: 2px;">
+        </div>
+        <button type="submit" class="admin-input" style="background: var(--gold-gradient); color: #090c10; font-weight: 800; cursor: pointer; border: none; margin-top: 10px;">
+          دخول لوحة التحكم 🔐
+        </button>
+      </form>
+
+      <div style="margin-top: 20px;">
+        <a href="./index.html" style="color: var(--gold-light); font-size: 0.85rem; text-decoration: none;">← العودة للموقع الرئيسي</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 2. MAIN ADMIN DASHBOARD ==================== -->
+  <div id="dashboard-section" style="display: none; width: 100%;">
+    <div style="display: flex; min-height: 100vh;">
+      
+      <!-- Desktop Sidebar -->
+      <aside class="admin-sidebar">
+        <a href="./index.html" class="admin-brand">
+          <img src="./images/logo.jpg" alt="Logo" class="admin-logo">
+          <div class="admin-title-wrap">
+            <h2>إدارة الأكاديمية</h2>
+            <span>مركز شباب الأحمدية</span>
+          </div>
+        </a>
+
+        <ul class="admin-nav">
+          <li>
+            <button class="admin-nav-btn active" data-tab="tab-potd">
+              <span>⭐</span> رجل اليوم (لوحة الشرف)
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-requests">
+              <span>📝</span> طلبات الانضمام
+              <span id="badge-requests-count" class="admin-nav-badge">0</span>
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-players">
+              <span>🏃</span> إدارة اللاعبين
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-coaches">
+              <span>👔</span> الجهاز الفني (المدربين)
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-matches">
+              <span>⚽</span> المباريات والنتائج
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-news">
+              <span>📰</span> الأخبار والشريط المتحرك
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-trophies">
+              <span>🏆</span> دولاب البطولات
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-schedules">
+              <span>🕒</span> جدول التدريب
+            </button>
+          </li>
+          <li>
+            <button class="admin-nav-btn" data-tab="tab-settings">
+              <span>💾</span> النسخ الاحتياطي والضبط
+            </button>
+          </li>
+        </ul>
+
+        <div style="padding-top: 15px; border-top: 1px solid var(--admin-border); margin-top: auto;">
+          <button id="btn-admin-logout" class="admin-nav-btn" style="color: var(--danger);">
+            <span>🚪</span> تسجيل الخروج
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content Container -->
+      <div class="admin-main">
+        
+        <!-- Top Bar -->
+        <header class="admin-topbar">
+          <div class="admin-topbar-title">
+            <h1 id="page-title">لوحة الشرف (رجل اليوم)</h1>
+          </div>
+          <div class="admin-actions">
+            <a href="./index.html" target="_blank" class="btn-admin-action">
+              <span>🌐</span> معاينة الموقع
+            </a>
+            <button id="btn-mobile-logout" class="btn-admin-action" style="color: var(--danger);">
+              <span>🚪</span> خروج
+            </button>
+          </div>
+        </header>
+
+        <!-- Quick Stats Overview -->
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div class="stat-icon-wrap">🏃</div>
+            <div class="stat-details">
+              <h4>إجمالي اللاعبين</h4>
+              <div class="num" id="stat-total-players">0</div>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="stat-icon-wrap">📝</div>
+            <div class="stat-details">
+              <h4>طلبات تقديم جديدة</h4>
+              <div class="num" id="stat-new-requests" style="color: #f1c40f;">0</div>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="stat-icon-wrap">🏆</div>
+            <div class="stat-details">
+              <h4>الكؤوس والبطولات</h4>
+              <div class="num" id="stat-total-trophies">0</div>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="stat-icon-wrap">⚽</div>
+            <div class="stat-details">
+              <h4>المباريات القادمة</h4>
+              <div class="num" id="stat-total-matches">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 1: PLAYER OF THE DAY ==================== -->
+        <div id="tab-potd" class="tab-panel active">
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>⭐ تعيين رجل اليوم (لوحة الشرف لمدة 24 ساعة)</h3>
+              <span class="badge-status approved" id="potd-status-indicator">اللوحة مفعلة حالياً</span>
+            </div>
+            
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">
+              اختر أي لاعب من قائمة لاعبي الأكاديمية ليتم إبرازه في صدارة الموقع كـ "رجل اليوم" لمدة 24 ساعة مع إضاءة ذهبية وعد تنازلي مباشر.
+            </p>
+
+            <form id="form-set-potd">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px;">
+                <div class="admin-form-group">
+                  <label class="admin-label">اختر اللاعب *</label>
+                  <select id="potd-player-select" class="admin-select" required>
+                    <!-- Options populated from players list -->
+                  </select>
+                </div>
+
+                <div class="admin-form-group">
+                  <label class="admin-label">مدة الظهور في لوحة الشرف *</label>
+                  <select id="potd-duration-select" class="admin-select">
+                    <option value="24" selected>24 ساعة (يوم كامل - موصى به)</option>
+                    <option value="48">48 ساعة (يومان)</option>
+                    <option value="72">72 ساعة (3 أيام)</option>
+                    <option value="168">أسبوع كامل (7 أيام)</option>
+                    <option value="12">12 ساعة فقط</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="admin-form-group">
+                <label class="admin-label">سبب التكريم وأبرز الإنجازات *</label>
+                <textarea id="potd-reason-input" class="admin-textarea" rows="2" placeholder="مثال: تسجيل هدف الفوز الحاسم في الدقيقة الأخيرة والانضباط الأخلاقي الرائع في المعسكر التدريبي" required></textarea>
+              </div>
+
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" class="btn-admin-action" style="background: var(--gold-gradient); color: #090c10; font-weight: 800; padding: 12px 24px;">
+                  ⭐ تفعيل واختيار "رجل اليوم" الآن
+                </button>
+                <button type="button" id="btn-toggle-potd" class="btn-admin-action" style="padding: 12px 20px;">
+                  إيقاف / تفعيل الظهور
+                </button>
+              </div>
+            </form>
+
+            <div style="margin-top: 30px; padding: 20px; background: rgba(0, 0, 0, 0.4); border-radius: 14px; border: 1px dashed var(--admin-border);" id="potd-current-preview">
+              <!-- Current active player info rendered here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 2: REGISTRATION REQUESTS ==================== -->
+        <div id="tab-requests" class="tab-panel">
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>📝 طلبات تقديم اللاعبين الجدد</h3>
+              <span style="font-size: 0.85rem; color: var(--text-muted);">يمكنك التواصل فوراً مع ولي الأمر عبر واتساب بنقرة واحدة</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>اسم اللاعب</th>
+                    <th>العمر / الميلاد</th>
+                    <th>ولي الأمر</th>
+                    <th>الهاتف (واتساب)</th>
+                    <th>المركز المفضل</th>
+                    <th>القدم</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-requests-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 3: PLAYERS MANAGEMENT ==================== -->
+        <div id="tab-players" class="tab-panel">
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>🏃 قائمة لاعبي الأكاديمية</h3>
+              <button class="btn-admin-action" onclick="openPlayerModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ إضافة لاعب جديد
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>اللاعب</th>
+                    <th>العمر</th>
+                    <th>الفئة</th>
+                    <th>المركز</th>
+                    <th>الرقم</th>
+                    <th>القدم</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-players-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 4: COACHES MANAGEMENT ==================== -->
+        <div id="tab-coaches" class="tab-panel">
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>👔 الجهاز الفني والمدربين</h3>
+              <button class="btn-admin-action" onclick="openCoachModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ إضافة مدرب جديد
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>المدرب</th>
+                    <th>السن</th>
+                    <th>المسمى الوظيفي</th>
+                    <th>الرخصة التدريبية</th>
+                    <th>الخبرة</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-coaches-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 5: MATCHES & RESULTS ==================== -->
+        <div id="tab-matches" class="tab-panel">
+          <!-- Upcoming Matches -->
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>📅 المباريات القادمة</h3>
+              <button class="btn-admin-action" onclick="openUpcomingMatchModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ جدولة مباراة قادمة
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>المنافس</th>
+                    <th>الفئة السنية</th>
+                    <th>البطولة</th>
+                    <th>الملعب</th>
+                    <th>التاريخ والتوقيت</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-upcoming-matches-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Match Results -->
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>⚽ نتائج المباريات السابقة</h3>
+              <button class="btn-admin-action" onclick="openResultMatchModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ تسجيل نتيجة مباراة
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>المنافس</th>
+                    <th>الفئة</th>
+                    <th>النتيجة</th>
+                    <th>مسجلو الأهداف</th>
+                    <th>التاريخ</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-results-matches-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 6: NEWS & TICKER ==================== -->
+        <div id="tab-news" class="tab-panel">
+          <!-- Ticker items -->
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>⚡ شريط الأخبار العاجلة (المتحرك)</h3>
+              <button class="btn-admin-action" onclick="openTickerModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ إضافة خبر للشريط
+              </button>
+            </div>
+            <ul id="ticker-items-list" style="list-style: none; display: flex; flex-direction: column; gap: 10px;">
+              <!-- Injected -->
+            </ul>
+          </div>
+
+          <!-- Full News Articles -->
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>📰 المقالات والأخبار الكاملة</h3>
+              <button class="btn-admin-action" onclick="openArticleModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ كتابة مقال إخباري جديد
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>عنوان الخبر</th>
+                    <th>القسم</th>
+                    <th>التاريخ</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-news-articles-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 7: TROPHIES ==================== -->
+        <div id="tab-trophies" class="tab-panel">
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>🏆 دولاب البطولات والكؤوس</h3>
+              <button class="btn-admin-action" onclick="openTrophyModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ إضافة بطولة جديدة
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>البطولة</th>
+                    <th>السنة</th>
+                    <th>الفئة</th>
+                    <th>الوسام</th>
+                    <th>الوصف</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-trophies-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 8: SCHEDULES ==================== -->
+        <div id="tab-schedules" class="tab-panel">
+          <div class="admin-content-card">
+            <div class="card-header-flex">
+              <h3>🕒 جداول ومواعيد التدريب</h3>
+              <button class="btn-admin-action" onclick="openScheduleModal()" style="background: var(--gold-gradient); color: #090c10; font-weight: 800;">
+                ➕ إضافة موعد تدريب جديد
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>الفئة العمرية</th>
+                    <th>أيام التدريب</th>
+                    <th>التوقيت</th>
+                    <th>الملعب</th>
+                    <th>المدرب المسؤول</th>
+                    <th>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="table-schedules-body">
+                  <!-- Injected -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 9: SETTINGS & BACKUP ==================== -->
+        <div id="tab-settings" class="tab-panel">
+          <div class="admin-content-card">
+            <h3 style="color: var(--gold-light); margin-bottom: 15px;">💾 النسخ الاحتياطي وحفظ البيانات</h3>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">
+              يتم حفظ جميع التعديلات في قاعدة بيانات Firebase والتخزين المحلي للمتصفح. يمكنك تحميل نسخة احتياطية كاملة كملف JSON لرفعها على GitHub أو استعادتها في أي وقت.
+            </p>
+
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+              <button id="btn-export-backup" class="btn-admin-action" style="background: var(--gold-gradient); color: #090c10; font-weight: 800; padding: 12px 20px;">
+                📥 تصدير وتنزيل نسخة احتياطية (JSON)
+              </button>
+
+              <label class="btn-admin-action" style="padding: 12px 20px; cursor: pointer;">
+                📤 استيراد واستعادة من ملف JSON
+                <input type="file" id="input-import-backup" accept=".json" style="display: none;">
+              </label>
+
+              <button id="btn-reset-defaults" class="btn-admin-action" style="color: var(--danger); border-color: var(--danger); padding: 12px 20px;">
+                ⚠️ إعادة تعيين للبيانات الافتراضية
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 3. MOBILE BOTTOM NAVIGATION (ADMIN) ==================== -->
+  <nav class="admin-bottom-nav">
+    <button class="admin-bottom-item active" data-tab="tab-potd">
+      <span class="icon">⭐</span>
+      <span>رجل اليوم</span>
+    </button>
+    <button class="admin-bottom-item" data-tab="tab-requests">
+      <span class="icon">📝</span>
+      <span>الطلبات</span>
+    </button>
+    <button class="admin-bottom-item" data-tab="tab-players">
+      <span class="icon">🏃</span>
+      <span>اللاعبين</span>
+    </button>
+    <button class="admin-bottom-item" data-tab="tab-matches">
+      <span class="icon">⚽</span>
+      <span>المباريات</span>
+    </button>
+    <button class="admin-bottom-item" data-tab="tab-coaches">
+      <span class="icon">👔</span>
+      <span>المدربين</span>
+    </button>
+  </nav>
+
+  <!-- ==================== 4. GENERAL CRUD MODAL ==================== -->
+  <div id="general-modal" class="admin-modal-overlay">
+    <div class="admin-modal-card">
+      <div class="modal-header-flex">
+        <h3 id="modal-title">عنوان النافذة</h3>
+        <button type="button" class="btn-close-modal" onclick="closeAdminModal()">✕</button>
+      </div>
+      <div id="modal-body">
+        <!-- Injected dynamically by admin.js -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/admin.js"></script>
+</body>
+</html>
