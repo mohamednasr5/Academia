@@ -501,20 +501,17 @@ function renderNews(newsList) {
         <h3 class="news-title">${escapeHtml(news.title)}</h3>
         <p class="news-excerpt">${escapeHtml(news.summary || news.content)}</p>
         <div>
-          <button class="btn-outline-gold" style="padding: 6px 14px; font-size: 0.85rem;" onclick="openNewsModal('${news.id}')">
-            قراءة التفاصيل ←
-          </button>
+          <a href="./article.html?id=${news.id}" class="btn-outline-gold" style="padding: 7px 16px; font-size: 0.85rem; text-decoration: none; display: inline-flex;">
+            قراءة الخبر كاملاً ←
+          </a>
         </div>
       </div>
     </div>
   `).join('');
 
-  // Expose news modal opener to window
+  // Expose news opener to window (navigates to article page)
   window.openNewsModal = (newsId) => {
-    const item = (academyData.news || []).find(n => n.id === newsId);
-    if (!item) return;
-
-    alert(`${item.title}\n\nالتاريخ: ${item.date}\n\n${item.content || item.summary}`);
+    window.location.href = `./article.html?id=${newsId}`;
   };
 }
 

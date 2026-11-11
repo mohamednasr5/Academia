@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>تفاصيل الخبر | أكاديمية مركز شباب الأحمدية</title>
+  
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#d4af37">
+  <link rel="icon" type="image/jpeg" href="./images/logo.jpg">
+  
+  <link rel="stylesheet" href="./css/style.css">
+  <style>
+    .article-page-wrap {
+      padding: 50px 0 80px;
+    }
+    .article-card-main {
+      background: var(--bg-card);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      padding: 35px 25px;
+      max-width: 900px;
+      margin: 0 auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+    @media (min-width: 768px) {
+      .article-card-main {
+        padding: 50px 45px;
+      }
+    }
+    .article-cover-img {
+      width: 100%;
+      max-height: 440px;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      border: 2px solid var(--gold-primary);
+      margin-bottom: 30px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+    }
+    .article-title-main {
+      font-size: 2.1rem;
+      font-weight: 900;
+      line-height: 1.35;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 600px) {
+      .article-title-main {
+        font-size: 1.6rem;
+      }
+    }
+    .article-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .article-body-text {
+      color: #e2e8f0;
+      font-size: 1.15rem;
+      line-height: 2;
+      margin-bottom: 40px;
+      white-space: pre-line;
+    }
+    .article-share-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius-md);
+    }
+    .share-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: #fff;
+      transition: var(--transition);
+      cursor: pointer;
+      border: none;
+    }
+    .share-wa { background: #25d366; }
+    .share-fb { background: #1877f2; }
+    .share-copy { background: rgba(212, 175, 55, 0.2); border: 1px solid var(--border-gold); color: var(--gold-light); }
+    .share-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+    .btn-back-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--gold-light);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 25px;
+      transition: var(--transition);
+    }
+    .btn-back-home:hover {
+      color: #fff;
+      transform: translateX(4px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="./index.html" class="brand-wrap">
+        <img src="./images/logo.jpg" alt="شعار الأكاديمية" class="brand-logo">
+        <div class="brand-text">
+          <h1>أكاديمية مركز شباب الأحمدية</h1>
+          <span>صناع الأبطال ونجوم المستقبل</span>
+        </div>
+      </a>
+      <div class="header-actions">
+        <a href="./index.html#news" class="btn-outline-gold" style="padding: 7px 16px; font-size: 0.85rem;">
+          <span>←</span> العودة للأخبار
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="article-page-wrap">
+    <div class="container">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <a href="./index.html#news" class="btn-back-home">
+          <span>←</span> العودة لجميع أخبار الأكاديمية
+        </a>
+      </div>
+
+      <article class="article-card-main" id="article-content-container">
+        <!-- Injected dynamically by js/article.js -->
+        <div style="text-align: center; padding: 60px; color: var(--text-muted);">
+          جاري تحميل تفاصيل الخبر...
+        </div>
+      </article>
+
+      <!-- Other News Section -->
+      <section style="max-width: 900px; margin: 50px auto 0;">
+        <div class="section-title-wrap" style="margin-bottom: 25px; text-align: right;">
+          <h3 style="font-size: 1.4rem; color: var(--gold-light);">📌 أخبار وتقارير أخرى قد تهمك:</h3>
+        </div>
+        <div class="news-grid" id="related-news-container">
+          <!-- Injected dynamically -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container" style="text-align: center;">
+      <p style="color: var(--text-muted); font-size: 0.85rem;">
+        جميع الحقوق محفوظة © 2026 لأكاديمية مركز شباب الأحمدية لكرة القدم
+      </p>
+    </div>
+  </footer>
+
+  <!-- Mobile Bottom Nav -->
+  <nav class="mobile-bottom-nav">
+    <a href="./index.html#home" class="mobile-nav-item">
+      <span class="icon">🏠</span>
+      <span>الرئيسية</span>
+    </a>
+    <a href="./index.html#matches" class="mobile-nav-item">
+      <span class="icon">⚽</span>
+      <span>المباريات</span>
+    </a>
+    <a href="./index.html#register" class="mobile-nav-item highlight-nav">
+      <span class="icon">✍️</span>
+      <span>تقديم</span>
+    </a>
+    <a href="./index.html#news" class="mobile-nav-item active">
+      <span class="icon">📰</span>
+      <span>الأخبار</span>
+    </a>
+    <a href="./admin.html" class="mobile-nav-item">
+      <span class="icon">⚙️</span>
+      <span>الإدارة</span>
+    </a>
+  </nav>
+
+  <script type="module" src="./js/article.js"></script>
+</body>
+</html>
