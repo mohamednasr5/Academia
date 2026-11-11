@@ -557,7 +557,7 @@ function setupRegistrationForm() {
       const whatsappMsg = encodeURIComponent(
         `السلام عليكم، قمت بتسجيل طلب انضمام جديد للاعب: ${playerName} (مواليد ${birthDate}) في أكاديمية مركز شباب الأحمدية. رقم الهاتف: ${phone}. نرجو إفادتنا بموعد الاختبار.`
       );
-      const whatsappUrl = `https://wa.me/201000000000?text=${whatsappMsg}`;
+      const whatsappUrl = `https://wa.me/201227506392?text=${whatsappMsg}`;
 
       const userChoice = confirm(
         `🎉 تم إرسال طلب التقديم للاعب (${playerName}) بنجاح وحفظه في سجلات الأكاديمية!\n\nهل ترغب في فتح محادثة واتساب فورية مع إدارة الأكاديمية لتأكيد موعد الاختبار الميداني؟`
