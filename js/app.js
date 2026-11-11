@@ -225,9 +225,62 @@ function startPotdCountdown(expiresAtStr) {
 }
 
 // ==================== 6. COACHES SECTION (الجهاز الفني) ====================
+function formatCoachBio(bioText) {
+  if (!bioText || !bioText.trim()) {
+    return `
+      <div class="coach-bio-box">
+        <div class="coach-bio-title"><span>📋</span> السيرة الذاتية والمسيرة الرياضية:</div>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">مدرب معتمد ذو خبرة رياضية متميزة.</p>
+      </div>
+    `;
+  }
+
+  // Split by newlines, dashes, bullets, or semicolons
+  let rawItems = [];
+  if (bioText.includes('\n')) {
+    rawItems = bioText.split('\n');
+  } else if (bioText.includes('-')) {
+    rawItems = bioText.split('-');
+  } else if (bioText.includes('•')) {
+    rawItems = bioText.split('•');
+  } else {
+    rawItems = bioText.split(/[\r\n]+/);
+  }
+
+  // Clean and filter each line
+  const cleanedItems = rawItems
+    .map(item => item.replace(/^[\s\-\•\*\d\.\)\:]+/, '').trim())
+    .filter(item => item.length > 0);
+
+  if (cleanedItems.length === 0) {
+    cleanedItems.push(bioText.trim());
+  }
+
+  const listItemsHtml = cleanedItems.map((item, index) => `
+    <li class="coach-bio-item">
+      <span class="bio-num-badge">${index + 1}</span>
+      <span class="bio-text">${escapeHtml(item)}</span>
+    </li>
+  `).join('');
+
+  return `
+    <div class="coach-bio-box">
+      <div class="coach-bio-title"><span>📋</span> السيرة الذاتية والمسيرة الرياضية:</div>
+      <ol class="coach-bio-list">
+        ${listItemsHtml}
+      </ol>
+    </div>
+  `;
+}
+
 function renderCoaches(coaches) {
   const container = document.getElementById('coaches-container');
   if (!container) return;
+
+  if (coaches.length === 0) {
+    container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 30px; grid-column: 1/-1;">لا يوجد مدربين مسجلين حالياً.</div>';
+    return;
+  }
 
   container.innerHTML = coaches.map(coach => `
     <div class="coach-card">
@@ -240,16 +293,15 @@ function renderCoaches(coaches) {
       <div class="coach-body">
         <h3 class="coach-name">${escapeHtml(coach.name)}</h3>
         <div class="coach-meta-row">
-          <span>🎂 السن: ${coach.age || 35} سنة</span>
-          <span>💼 الخبرة: ${escapeHtml(coach.experience || 'خبرة سنوات')}</span>
+          <span>🎂 السن: ${coach.age || 30} سنة</span>
+          <span>•</span>
+          <span>💼 الخبرة: ${escapeHtml(coach.experience || 'خبرة تدريبية متميزة')}</span>
         </div>
-        <div class="coach-bio">
-          ${escapeHtml(coach.bio || '')}
-        </div>
+        ${formatCoachBio(coach.bio)}
         <div class="coach-footer">
           <div class="coach-footer-item">
             <span>📜</span>
-            <strong>المؤهل:</strong> ${escapeHtml(coach.license || 'رخصة تدريب رياضية')}
+            <span><strong>المؤهل التدريبي:</strong> ${escapeHtml(coach.license || 'رخصة تدريب رياضية معتمدة')}</span>
           </div>
         </div>
       </div>

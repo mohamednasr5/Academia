@@ -470,8 +470,8 @@ window.openCoachModal = (coach = null) => {
         <input type="text" id="m-c-exp" class="admin-input" value="${isEdit ? escapeHtml(coach.experience || '') : '10 سنوات خبرة في قطاع الناشئين'}">
       </div>
       <div class="admin-form-group">
-        <label class="admin-label">السيرة الذاتية المفصلة (Bio) *</label>
-        <textarea id="m-c-bio" class="admin-textarea" rows="3" required>${isEdit ? escapeHtml(coach.bio) : ''}</textarea>
+        <label class="admin-label">السيرة الذاتية المفصلة (افصل بين كل نقطة بسطر جديد أو بشرطة - لتظهر مرقمة تلقائياً) *</label>
+        <textarea id="m-c-bio" class="admin-textarea" rows="4" placeholder="- لاعب نادي الجمارك ببورسعيد&#10;- لاعب نادي المريخ&#10;- لاعب نادي غزل المحلة" required>${isEdit ? escapeHtml(coach.bio) : ''}</textarea>
       </div>
       <div class="admin-form-group">
         <label class="admin-label">مسار صورة المدرب في مجلد images/ أو رابط الصورة</label>

@@ -620,44 +620,54 @@ body {
 .coach-card:hover {
   transform: translateY(-6px);
   border-color: var(--gold-primary);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7);
 }
 
 .coach-header {
   position: relative;
-  background: linear-gradient(180deg, rgba(212, 175, 55, 0.15) 0%, transparent 100%);
-  padding: 30px 20px 15px;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(15, 19, 26, 0.5) 100%);
+  padding: 30px 20px 22px;
   text-align: center;
 }
 
 .coach-avatar-wrap {
   position: relative;
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 15px;
+  width: 220px;
+  height: 220px;
+  max-width: 90%;
+  margin: 0 auto 20px;
 }
 
 .coach-avatar {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: 20px;
   object-fit: cover;
+  object-position: top center;
   border: 3px solid var(--gold-primary);
-  box-shadow: 0 0 18px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  background: #0d1117;
+  transition: transform 0.3s ease;
+}
+
+.coach-avatar:hover {
+  transform: scale(1.03);
 }
 
 .coach-role-badge {
   position: absolute;
-  bottom: -6px;
+  bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--gold-gradient);
   color: #0b0e14;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  padding: 3px 12px;
+  padding: 5px 16px;
   border-radius: 20px;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .coach-body {
@@ -668,46 +678,98 @@ body {
 }
 
 .coach-name {
-  font-size: 1.35rem;
-  font-weight: 800;
+  font-size: 1.45rem;
+  font-weight: 900;
   color: var(--text-white);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   text-align: center;
 }
 
 .coach-meta-row {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 15px;
-  margin-bottom: 18px;
-  font-size: 0.85rem;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
   color: var(--gold-light);
 }
 
-.coach-bio {
-  color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.7;
-  flex: 1;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 15px;
+.coach-bio-box {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 18px 20px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  margin-bottom: 15px;
+  border: 1px solid var(--border-gold);
+  margin-bottom: 18px;
+  flex: 1;
+}
+
+.coach-bio-title {
+  color: var(--gold-light);
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+  padding-bottom: 8px;
+}
+
+.coach-bio-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.coach-bio-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  color: var(--text-white);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.bio-num-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gold-gradient);
+  color: #0b0e14;
+  font-weight: 900;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  box-shadow: 0 2px 6px rgba(212, 175, 55, 0.3);
+}
+
+.bio-text {
+  flex: 1;
 }
 
 .coach-footer {
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  font-size: 0.9rem;
+  color: var(--text-white);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid var(--border-gold);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
 }
 
 .coach-footer-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* ==================== 6. TROPHY CABINET (دولاب البطولات) ==================== */
