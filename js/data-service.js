@@ -312,7 +312,7 @@ export async function saveTickerNews(newsArray) {
 // ============================================================
 // PLAYER OF THE DAY
 // ============================================================
-export export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, reason = "") {
+export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, reason = "") {
   const imageIndex = Number(imageNumber);
   if (!Number.isInteger(imageIndex) || imageIndex < 0 || imageIndex > 27) {
     throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
