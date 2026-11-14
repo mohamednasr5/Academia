@@ -20,6 +20,13 @@ let pendingImage = null; // holds a data URI for the currently-open modal's imag
 // ============================================================
 // INIT
 // ============================================================
+// Surface rejected cloud saves instead of silently appearing successful.
+window.addEventListener("unhandledrejection", (event) => {
+  const message = event.reason?.message || "تعذر حفظ التعديل على السحابة.";
+  console.error("[Academia] Admin action failed:", event.reason);
+  if (typeof adminToast === "function") adminToast(message, "error");
+});
+
 document.addEventListener("DOMContentLoaded", async () => {
   setupAuth();
   setupNavigation();
