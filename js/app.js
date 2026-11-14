@@ -9,7 +9,6 @@ import { getAllData, submitRegistrationRequest } from "./data-service.js";
 let academyData = null;
 let countdownInterval = null;
 let deferredPrompt = null;
-let currentPlayersFilter = { category: "all", position: "all", search: "" };
 
 // ============================================================
 // INIT
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initPWA();
   await loadAndRenderAll();
   setupRegistrationForm();
-  setupPlayersControls();
   setupPlayerDetailClose();
 
   // Real-time sync: re-render when data changes (admin edits or cloud pull)
