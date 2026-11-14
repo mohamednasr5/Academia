@@ -303,31 +303,35 @@ export async function saveTickerNews(newsArray) {
 // ============================================================
 // PLAYER OF THE DAY
 // ============================================================
-export async function setPlayerOfTheDay(playerId, hours = 24, reason = "") {
-  const data = getLocalStorageData();
-  const player = (data.players || []).find(p => String(p.id) === String(playerId));
-  if (!player) throw new Error("اللاعب غير موجود في قائمة اللاعبين");
+export export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, reason = "") {
+  const imageIndex = Number(imageNumber);
+  if (!Number.isInteger(imageIndex) || imageIndex < 0 || imageIndex > 27) {
+    throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
+  }
 
+  const data = getLocalStorageData();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
+  const playerName = imageIndex === 0 ? "المدربة" : `اللاعب رقم ${imageIndex}`;
   const starObj = {
-    playerId: player.id,
-    playerName: player.name,
-    playerAge: player.age,
-    playerPosition: player.position,
-    playerPhoto: player.photo || "./images/logo.jpg",
-    number: player.number || 10,
-    category: player.category || "",
-    reason: reason || "الأداء الاستثنائي والالتزام في التدريبات والمباريات",
+    playerId: `album-${imageIndex}`,
+    playerImageNumber: imageIndex,
+    playerName,
+    playerAge: "",
+    playerPosition: imageIndex === 0 ? "الجهاز الفني" : "لاعب بالأكاديمية",
+    playerPhoto: `./images/players/${imageIndex}.png`,
+    number: imageIndex,
+    category: "",
+    reason: reason || "الأداء المتميز والالتزام في الأكاديمية",
     selectedAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
-    rating: (Math.random() * (9.9 - 9.4) + 9.4).toFixed(1),
+    rating: "10.0",
     active: true
   };
   data.playerOfTheDay = starObj;
   saveLocalStorageData(data);
   pushMetaToCloud(data);
-  addActivity("⭐", `اختيار ${player.name} نجم اليوم`);
+  addActivity("⭐", `اختيار ${playerName} نجم اليوم من ألبوم الصور`);
   return starObj;
 }
 
