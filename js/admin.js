@@ -420,16 +420,44 @@ function wireRowActions(tbody) {
   });
 }
 
+function numberedAlbumImageField(inputId, previewId, currentPhoto) {
+  const initial = imageNumberFromPhoto(currentPhoto);
+  return `
+    <div class="admin-form-group">
+      <label class="admin-label" for="${inputId}">رقم الصورة <span class="req">*</span></label>
+      <input type="number" min="0" step="1" inputmode="numeric" id="${inputId}" class="admin-input" value="${initial}" placeholder="أدخل رقم الصورة فقط" required>
+      <small style="display:block;color:var(--text-muted);margin-top:6px;">اكتب رقم الصورة فقط. يبدأ الألبوم من 0 ويمكن إضافة أرقام جديدة لاحقاً دون حد أقصى.</small>
+      <div id="${previewId}" style="display:flex;align-items:center;gap:12px;margin-top:10px;min-height:72px;">
+        <img src="./images/players/${initial}.png" alt="معاينة الصورة" style="width:76px;height:90px;object-fit:cover;object-position:top;border-radius:10px;border:2px solid var(--gold-primary);" onerror="this.style.opacity='.25'">
+        <span style="color:var(--text-muted);">رقم الصورة: ${initial}</span>
+      </div>
+    </div>`;
+}
+function imageNumberFromPhoto(photo) {
+  const match = String(photo || "").match(/\/players\/(\d+)\.png(?:$|\?)/);
+  return match ? Number(match[1]) : 0;
+}
+function bindNumberedAlbumPreview(inputId, previewId) {
+  const input = document.getElementById(inputId), preview = document.getElementById(previewId);
+  if (!input || !preview || input.dataset.bound === "true") return;
+  input.addEventListener("input", () => {
+    const raw = input.value.trim(), n = Number(raw);
+    if (!raw || !Number.isInteger(n) || n < 0) {
+      preview.innerHTML = '<span style="color:var(--text-muted);">أدخل رقماً صحيحاً يبدأ من 0</span>';
+      return;
+    }
+    preview.innerHTML = `<img src="./images/players/${n}.png" alt="معاينة الصورة ${n}" style="width:76px;height:90px;object-fit:cover;object-position:top;border-radius:10px;border:2px solid var(--gold-primary);" onerror="this.style.opacity='.25'"><span style="color:var(--text-muted);">رقم الصورة: ${n}</span>`;
+  });
+  input.dataset.bound = "true";
+}
+
 // --- Player modal ---
 function openPlayerModal(player = null) {
   const isEdit = !!player;
   pendingImage = null;
   const body = `
     <form id="form-player-crud">
-      <div class="admin-form-group">
-        <label class="admin-label">صورة اللاعب</label>
-        ${imageUploadField("player-photo-preview", player?.photo)}
-      </div>
+      ${numberedAlbumImageField("m-p-photo-number", "player-photo-preview", player?.photo)}
       <div class="admin-form-group">
         <label class="admin-label">اسم اللاعب الرباعي <span class="req">*</span></label>
         <input type="text" id="m-p-name" class="admin-input" value="${isEdit ? escapeHtml(player.name) : ''}" required>
@@ -457,7 +485,7 @@ function openPlayerModal(player = null) {
       <button type="submit" class="btn-admin-action" style="width:100%;background:var(--gold-gradient);color:#07110f;font-weight:800;padding:12px;border:none;margin-top:8px;">${isEdit ? '💾 حفظ التعديلات' : '➕ إضافة اللاعب'}</button>
     </form>`;
   showAdminModal(isEdit ? "تعديل بيانات اللاعب" : "إضافة لاعب جديد", body);
-  wireImageUpload("player-photo-preview");
+  bindNumberedAlbumPreview("m-p-photo-number", "player-photo-preview");
 
   document.getElementById("form-player-crud").onsubmit = async (e) => {
     e.preventDefault();
@@ -479,7 +507,7 @@ function openPlayerModal(player = null) {
       registrationStatus: document.getElementById("m-p-status").value,
       achievements: achievementsText ? achievementsText.split('\n').map(s => s.trim()).filter(Boolean) : [],
       performance: document.getElementById("m-p-perf").value.trim(),
-      photo: pendingImage || (isEdit ? player.photo : './images/logo.jpg')
+      photo: `./images/players/${Math.max(0, Math.floor(Number(document.getElementById("m-p-photo-number").value) || 0))}.png`
     };
     await saveItem("players", item);
     closeAdminModal();
@@ -496,7 +524,7 @@ function openCoachModal(coach = null) {
   pendingImage = null;
   const body = `
     <form id="form-coach-crud">
-      <div class="admin-form-group"><label class="admin-label">صورة المدرب</label>${imageUploadField("coach-photo-preview", coach?.photo)}</div>
+      ${numberedAlbumImageField("m-c-photo-number", "coach-photo-preview", coach?.photo)}
       <div class="admin-form-group"><label class="admin-label">اسم المدرب <span class="req">*</span></label><input type="text" id="m-c-name" class="admin-input" value="${isEdit ? escapeHtml(coach.name) : ''}" required></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div class="admin-form-group"><label class="admin-label">السن <span class="req">*</span></label><input type="number" id="m-c-age" class="admin-input" value="${isEdit ? coach.age : 35}" required></div>
@@ -512,7 +540,7 @@ function openCoachModal(coach = null) {
       <button type="submit" class="btn-admin-action" style="width:100%;background:var(--gold-gradient);color:#07110f;font-weight:800;padding:12px;border:none;margin-top:8px;">${isEdit ? '💾 حفظ التعديلات' : '➕ إضافة المدرب'}</button>
     </form>`;
   showAdminModal(isEdit ? "تعديل بيانات المدرب" : "إضافة مدرب جديد", body);
-  wireImageUpload("coach-photo-preview");
+  bindNumberedAlbumPreview("m-c-photo-number", "coach-photo-preview");
   document.getElementById("form-coach-crud").onsubmit = async (e) => {
     e.preventDefault();
     const item = {
@@ -525,7 +553,7 @@ function openCoachModal(coach = null) {
       bio: document.getElementById("m-c-bio").value.trim(),
       phone: document.getElementById("m-c-phone").value.trim(),
       email: document.getElementById("m-c-email").value.trim(),
-      photo: pendingImage || (isEdit ? coach.photo : './images/logo.jpg')
+      photo: `./images/players/${Math.max(0, Math.floor(Number(document.getElementById("m-c-photo-number").value) || 0))}.png`
     };
     await saveItem("coaches", item);
     closeAdminModal();
