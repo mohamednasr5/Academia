@@ -5,7 +5,7 @@
 // =====================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import {
-  getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc,
+  initializeFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc,
   updateDoc, deleteDoc, onSnapshot, query, orderBy, writeBatch
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
@@ -26,7 +26,8 @@ let isFirebaseOnline = false;
 
 try {
   app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
+  // Use long polling for networks/proxies that interrupt Firestore's WebChannel transport.
+  db = initializeFirestore(app, { experimentalForceLongPolling: true });
   isFirebaseOnline = true;
   console.log("[Academia] Firebase initialized — cloud sync active for project academia-e6d7b");
 } catch (error) {
