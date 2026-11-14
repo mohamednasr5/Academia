@@ -458,13 +458,13 @@ function renderPlayers() {
     const isCoach = index === 0;
     return `
       <button class="players-carousel-slide" type="button"
-        data-slide-index="${index}" aria-label="${isCoach ? "المدربة" : `اللاعب رقم ${index}`}" tabindex="-1">
+        data-slide-index="${index}" aria-label="${isCoach ? "المدرب الفني" : `اللاعب رقم ${index}`}" tabindex="-1">
         <span class="players-carousel-image-frame">
           <img src="${src}" alt="${isCoach ? "المدربة" : `اللاعب رقم ${index}`}"
             loading="${index < 3 ? "eager" : "lazy"}" draggable="false"
             onerror="this.closest('.players-carousel-slide').classList.add('image-missing')">
         </span>
-        <span class="players-carousel-slide-number">${isCoach ? "الجهاز الفني" : String(index).padStart(2, "0")}</span>
+        <span class="players-carousel-slide-number">${isCoach ? "المدرب الفني" : String(index).padStart(2, "0")}</span>
       </button>`;
   });
   track.innerHTML = slides.join("");
@@ -530,7 +530,7 @@ function movePlayersCarousel(direction) {
 function startPlayersCarousel() {
   stopPlayersCarousel();
   if (playersCarouselPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  playersCarouselTimer = window.setInterval(() => movePlayersCarousel(1), 3600);
+  playersCarouselTimer = window.setInterval(() => movePlayersCarousel(1), 5000);
 }
 
 function stopPlayersCarousel() {
