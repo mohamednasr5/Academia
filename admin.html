@@ -139,10 +139,26 @@
               اختر أي لاعب من قائمة لاعبي الأكاديمية ليتم إبرازه في صدارة الموقع كـ "نجم اليوم" مع إضاءة ذهبية وعد تنازلي مباشر.
             </p>
             <form id="form-set-potd">
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
+              <div class="settings-grid">
+                <div class="admin-form-group">
+                  <label class="admin-label" for="potd-player-name">اسم اللاعب <span class="req">*</span></label>
+                  <input id="potd-player-name" class="admin-input" type="text" placeholder="اكتب اسم اللاعب كاملاً" required>
+                </div>
+                <div class="admin-form-group">
+                  <label class="admin-label" for="potd-player-age">عمر اللاعب <span class="req">*</span></label>
+                  <input id="potd-player-age" class="admin-input" type="number" min="4" max="60" placeholder="مثال: 12" required>
+                </div>
+                <div class="admin-form-group">
+                  <label class="admin-label" for="potd-player-position">مركز اللاعب <span class="req">*</span></label>
+                  <input id="potd-player-position" class="admin-input" type="text" placeholder="مثال: صانع ألعاب / مهاجم" required>
+                </div>
+                <div class="admin-form-group">
+                  <label class="admin-label" for="potd-player-rating">التقييم من 10 <span class="req">*</span></label>
+                  <input id="potd-player-rating" class="admin-input" type="number" min="1" max="10" step="0.1" value="10" required>
+                </div>
                 <div class="admin-form-group">
                   <label class="admin-label" for="potd-image-number">رقم صورة اللاعب <span class="req">*</span></label>
-                  <input id="potd-image-number" class="admin-input" type="number" min="0" max="27" step="1" inputmode="numeric" placeholder="اكتب رقم الصورة من 0 إلى 27" required>
+                  <input id="potd-image-number" class="admin-input" type="number" min="0" max="27" step="1" inputmode="numeric" placeholder="من 0 إلى 27" required>
                   <small style="display:block;color:var(--text-muted);margin-top:7px;">0 = المدرب الفني، والأرقام من 1 إلى 27 للاعبين</small>
                   <div id="potd-image-preview" style="min-height:54px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px;border:1px dashed var(--admin-border);border-radius:12px;">
                     <span style="color:var(--text-muted);">أدخل رقم الصورة لعرض المعاينة</span>
@@ -161,7 +177,7 @@
               </div>
               <div class="admin-form-group">
                 <label class="admin-label">سبب التكريم وأبرز الإنجازات <span class="req">*</span></label>
-                <textarea id="potd-reason-input" class="admin-textarea" rows="2" placeholder="مثال: تسجيل هدف الفوز الحاسم والانضباط الأخلاقي الرائع" required></textarea>
+                <textarea id="potd-reason-input" class="admin-textarea" rows="2" placeholder="اكتب سبب اختيار اللاعب وأبرز إنجازاته" required></textarea>
               </div>
               <div style="display:flex;gap:12px;flex-wrap:wrap;">
                 <button type="submit" class="btn-admin-action" style="background:var(--gold-gradient);color:#07110f;font-weight:800;padding:12px 24px;border:none;">⭐ تفعيل نجم اليوم</button>
