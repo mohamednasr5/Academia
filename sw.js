@@ -63,18 +63,24 @@ self.addEventListener("fetch", (event) => {
   // HTML navigations: stale-while-revalidate.
   // Return the cached page immediately; refresh it quietly for the next visit.
   if (req.mode === "navigate") {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE_VERSION);
-      const cached = await cache.match(req) || await cache.match("./index.html");
-      const refresh = fetch(req).then(response => {
+    const cachePromise = caches.open(CACHE_VERSION);
+    const refreshPromise = cachePromise.then(cache =>
+      fetch(req).then(response => {
         if (response && response.ok) cache.put(req, response.clone());
         return response;
-      }).catch(() => null);
-      if (cached) {
-        event.waitUntil(refresh);
-        return cached;
-      }
-      return (await refresh) || new Response("الصفحة غير متاحة حالياً", {
+      })
+    );
+    // Register background refresh during the fetch event, not after an await.
+    event.waitUntil(refreshPromise.then(() => {}).catch(() => {}));
+    event.respondWith((async () => {
+      const cache = await cachePromise;
+      const cached = await cache.match(req) || await cache.match("./index.html");
+      if (cached) return cached;
+      try {
+        const response = await refreshPromise;
+        if (response) return response;
+      } catch (_) {}
+      return new Response("الصفحة غير متاحة حالياً", {
         status: 503,
         headers: { "Content-Type": "text/plain; charset=utf-8" }
       });
