@@ -473,7 +473,7 @@ function renderPlayers() {
         data-slide-index="${index}" aria-label="${isCoach ? "المدرب الفني" : `اللاعب رقم ${index}`}" tabindex="-1">
         <span class="players-carousel-image-frame">
           <img src="${src}" alt="${isCoach ? "المدربة" : `اللاعب رقم ${index}`}"
-            loading="${index < 3 ? "eager" : "lazy"}" draggable="false"
+            loading="${index === 0 || index === 1 || index === 27 ? "eager" : "lazy"}" decoding="async" draggable="false"
             onerror="this.closest('.players-carousel-slide').classList.add('image-missing')">
         </span>
         <span class="players-carousel-slide-number">${isCoach ? "المدرب الفني" : String(index).padStart(2, "0")}</span>
