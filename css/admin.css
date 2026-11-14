@@ -635,3 +635,40 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* =====================================================================
+   MOBILE LAYOUT HARDENING — keep dashboard inside viewport
+   ===================================================================== */
+html, body { width: 100%; max-width: 100%; overflow-x: clip; }
+.admin-main, .admin-topbar, .admin-content-card, .tab-panel,
+.admin-stats-grid, .overview-grid, .settings-grid { min-width: 0; max-width: 100%; }
+.admin-main { width: 100%; }
+.admin-content-card, .admin-modal-card { overflow-wrap: anywhere; }
+.admin-form-group, .admin-input, .admin-select, .admin-textarea { min-width: 0; max-width: 100%; }
+.table-responsive { max-width: 100%; overscroll-behavior-inline: contain; }
+.admin-table { min-width: 600px; }
+@media (max-width: 767px) {
+  .admin-main { padding: 10px 10px calc(78px + env(safe-area-inset-bottom)); }
+  .admin-topbar { align-items: flex-start; padding: 12px; gap: 10px; }
+  .admin-topbar-title { min-width: 0; flex: 1 1 100%; }
+  .admin-topbar-title h1 { font-size: .95rem; overflow-wrap: anywhere; }
+  .admin-actions { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .admin-actions > * { min-width: 0; justify-content: center; text-align: center; white-space: normal; }
+  .admin-stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .admin-stat-card { min-width: 0; }
+  .admin-content-card { padding: 12px; margin-bottom: 14px; border-radius: 14px; }
+  .card-header-flex { align-items: flex-start; }
+  .card-header-flex h3 { min-width: 0; font-size: 1rem; }
+  .settings-grid { grid-template-columns: minmax(0,1fr) !important; }
+  .settings-grid > * { grid-column: auto !important; }
+  .admin-modal-overlay { padding: 8px; align-items: flex-end; }
+  .admin-modal-card { width: 100%; max-width: 100%; max-height: 92dvh; padding: 16px 12px; border-radius: 18px 18px 10px 10px; }
+  .admin-bottom-nav { height: calc(66px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+  .admin-bottom-item { min-width: 0; font-size: .6rem; }
+  .admin-toast { left: 12px; right: 12px; max-width: none; width: auto; border-radius: 14px; }
+}
+@media (max-width: 380px) {
+  .admin-stats-grid { grid-template-columns: minmax(0,1fr); }
+  .admin-actions { grid-template-columns: minmax(0,1fr); }
+}
