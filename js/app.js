@@ -4,7 +4,7 @@
 // with search/filter, player detail modal, scroll reveals, skeletons,
 // real-time sync from admin, settings-driven branding.
 // =====================================================================
-import { getAllData, submitRegistrationRequest } from "./data-service.js";
+import { getAllData, syncFromCloud, submitRegistrationRequest } from "./data-service.js";
 
 let academyData = null;
 let countdownInterval = null;
@@ -18,12 +18,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupScrollReveal();
   setupScrollSpy();
   initPWA();
+
+  // First paint uses the local cache only; never wait for Firebase or the network.
   await loadAndRenderAll();
   setupRegistrationForm();
   setupPlayerDetailClose();
 
-  // Real-time sync: re-render when data changes (admin edits or cloud pull)
-  window.addEventListener("storage", async () => { await loadAndRenderAll(); });
+  // Cloud refresh happens after the page is already usable.
+  // The storage event emitted after cache hydration updates the page automatically.
+  let renderQueued = false;
+  window.addEventListener("storage", () => {
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(async () => {
+      renderQueued = false;
+      await loadAndRenderAll();
+    });
+  });
+  syncFromCloud().catch(error => console.warn("[Academia] Background refresh failed:", error));
 });
 
 // ============================================================
