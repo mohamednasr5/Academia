@@ -312,36 +312,49 @@ export async function saveTickerNews(newsArray) {
 // ============================================================
 // PLAYER OF THE DAY
 // ============================================================
-export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, reason = "") {
+export async function setPlayerOfTheDay(details) {
+  const { playerName, playerAge, playerPosition, rating, imageNumber, hours = 24, reason = "" } = details || {};
   const imageIndex = Number(imageNumber);
-  if (!Number.isInteger(imageIndex) || imageIndex < 0 || imageIndex > 27) {
-    throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
-  }
-
+  const age = Number(playerAge), score = Number(rating);
+  if (!String(playerName || "").trim()) throw new Error("اكتب اسم اللاعب");
+  if (!Number.isFinite(age) || age < 4 || age > 60) throw new Error("أدخل عمراً صحيحاً");
+  if (!String(playerPosition || "").trim()) throw new Error("اكتب مركز اللاعب");
+  if (!Number.isFinite(score) || score < 1 || score > 10) throw new Error("التقييم يجب أن يكون من 1 إلى 10");
+  if (!Number.isInteger(imageIndex) || imageIndex < 0 || imageIndex > 27) throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
   const data = getLocalStorageData();
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
-  const playerName = imageIndex === 0 ? "المدرب الفني" : `اللاعب رقم ${imageIndex}`;
+  const expiresAt = new Date(now.getTime() + Number(hours) * 60 * 60 * 1000);
   const starObj = {
     playerId: `album-${imageIndex}`,
     playerImageNumber: imageIndex,
-    playerName,
-    playerAge: "",
-    playerPosition: imageIndex === 0 ? "المدرب الفني" : "لاعب بالأكاديمية",
+    playerName: String(playerName).trim(),
+    playerAge: age,
+    playerPosition: String(playerPosition).trim(),
     playerPhoto: `./images/players/${imageIndex}.png`,
     number: imageIndex,
     category: "",
-    reason: reason || "الأداء المتميز والالتزام في الأكاديمية",
+    reason: String(reason || "").trim() || "الأداء المتميز والالتزام في الأكاديمية",
     selectedAt: now.toISOString(),
     expiresAt: expiresAt.toISOString(),
-    rating: "10.0",
+    rating: score,
     active: true
   };
   data.playerOfTheDay = starObj;
   saveLocalStorageData(data);
   pushMetaToCloud(data);
-  addActivity("⭐", `اختيار ${playerName} نجم اليوم من ألبوم الصور`);
+  addActivity("⭐", `اختيار ${starObj.playerName} نجم اليوم`);
   return starObj;
+}
+
+// Backward-compatible helper for older admin clients.
+export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, reason = "") {
+  const imageIndex = Number(imageNumber);
+  return setPlayerOfTheDay({
+    playerName: imageIndex === 0 ? "المدرب الفني" : `اللاعب رقم ${imageIndex}`,
+    playerAge: 12,
+    playerPosition: imageIndex === 0 ? "المدرب الفني" : "لاعب بالأكاديمية",
+    rating: 10, imageNumber: imageIndex, hours, reason
+  });
 }
 
 export async function togglePlayerOfTheDay(active) {
