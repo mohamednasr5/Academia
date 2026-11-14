@@ -143,8 +143,12 @@
             <form id="form-set-potd">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;">
                 <div class="admin-form-group">
-                  <label class="admin-label">اختر اللاعب <span class="req">*</span></label>
-                  <select id="potd-player-select" class="admin-select" required></select>
+                  <label class="admin-label" for="potd-image-number">رقم صورة اللاعب <span class="req">*</span></label>
+                  <input id="potd-image-number" class="admin-input" type="number" min="0" max="27" step="1" inputmode="numeric" placeholder="اكتب رقم الصورة من 0 إلى 27" required>
+                  <small style="display:block;color:var(--text-muted);margin-top:7px;">0 = المدربة، والأرقام من 1 إلى 27 للاعبين</small>
+                  <div id="potd-image-preview" style="min-height:54px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;padding:10px;border:1px dashed var(--admin-border);border-radius:12px;">
+                    <span style="color:var(--text-muted);">أدخل رقم الصورة لعرض المعاينة</span>
+                  </div>
                 </div>
                 <div class="admin-form-group">
                   <label class="admin-label">مدة الظهور <span class="req">*</span></label>
