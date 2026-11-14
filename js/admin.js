@@ -833,6 +833,11 @@ function setupChangePasswordForm() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const np = document.getElementById("new-admin-password").value;
+    const confirm = document.getElementById("confirm-admin-password").value;
+    if (np !== confirm) {
+      adminToast("رمزا المرور غير متطابقين", "error");
+      return;
+    }
     try {
       await changeAdminPassword(np);
       form.reset();
