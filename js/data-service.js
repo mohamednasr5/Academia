@@ -130,24 +130,40 @@ function stripImages(data) {
 // ============================================================
 // FIRESTORE SYNC
 // ============================================================
-function firestoreSync(operationPromise, opName = "operation") {
-  Promise.race([
-    operationPromise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3500))
-  ]).catch(err => {
-    console.warn(`[Academia] Cloud sync note (${opName}):`, err.message || err);
-  });
+// Cloud writes are awaited. Never report success for a local-only change.
+async function requireFirebase() {
+  const fb = await getFirebase();
+  if (!fb?.isFirebaseOnline || !fb.db) {
+    throw new Error("تعذر الاتصال بقاعدة بيانات الأكاديمية. لم يتم نشر التعديل؛ تحقق من اتصال Firebase ثم أعد المحاولة.");
+  }
+  return fb;
 }
 
-// Push a single item to its Firestore collection
-function pushItemToCloud(collectionName, item) {
-  getFirebase().then(fb => {
-    if (!fb?.isFirebaseOnline || !fb.db) return;
-    firestoreSync(
-      fb.setDoc(fb.doc(fb.db, collectionName, String(item.id)), item, { merge: true }),
-      `save ${collectionName}`
-    );
-  });
+async function pushItemToCloud(collectionName, item) {
+  const fb = await requireFirebase();
+  try {
+    await fb.setDoc(fb.doc(fb.db, collectionName, String(item.id)), item);
+    return true;
+  } catch (error) {
+    console.error(`[Academia] Firestore write failed (${collectionName}):`, error);
+    throw new Error("فشل نشر البيانات على السحابة. لم يتم اعتماد التعديل؛ تحقق من صلاحيات Firestore وقواعد الأمان.");
+  }
+}
+
+async function pushMetaToCloud(data) {
+  const fb = await requireFirebase();
+  try {
+    await fb.setDoc(fb.doc(fb.db, fb.META_DOC, "state"), {
+      tickerNews: data.tickerNews || [],
+      playerOfTheDay: data.playerOfTheDay || { active: false },
+      settings: data.settings || {},
+      activity: data.activity || []
+    }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("[Academia] Firestore metadata write failed:", error);
+    throw new Error("فشل نشر التعديلات العامة على السحابة. لم يتم اعتمادها.");
+  }
 }
 
 // Pull ALL data from Firestore and merge into local (cloud wins for shared content)
@@ -267,10 +283,11 @@ export function getSettings() {
 
 export async function saveSettings(newSettings) {
   const data = getLocalStorageData();
-  data.settings = { ...data.settings, ...newSettings };
-  saveLocalStorageData(data);
-  pushMetaToCloud(data);
-  return data.settings;
+  const nextSettings = { ...data.settings, ...newSettings };
+  const next = { ...data, settings: nextSettings };
+  await pushMetaToCloud(next);
+  saveLocalStorageData(next);
+  return nextSettings;
 }
 
 // ============================================================
@@ -279,37 +296,36 @@ export async function saveSettings(newSettings) {
 export async function saveItem(collectionName, item) {
   const data = getLocalStorageData();
   if (!Array.isArray(data[collectionName])) data[collectionName] = [];
+  const saved = { ...item };
+  if (!saved.id) saved.id = `${collectionName}-${Date.now()}`;
+  saved.updatedAt = new Date().toISOString();
 
-  if (!item.id) item.id = `${collectionName}-${Date.now()}`;
-  item.updatedAt = new Date().toISOString();
-
-  const idx = data[collectionName].findIndex(i => String(i.id) === String(item.id));
-  if (idx >= 0) {
-    data[collectionName][idx] = { ...data[collectionName][idx], ...item };
-  } else {
-    data[collectionName].unshift(item);
-  }
-
+  // Commit to Firestore first. Local cache is updated only after cloud confirms.
+  await pushItemToCloud(collectionName, saved);
+  const idx = data[collectionName].findIndex(i => String(i.id) === String(saved.id));
+  if (idx >= 0) data[collectionName][idx] = { ...data[collectionName][idx], ...saved };
+  else data[collectionName].unshift(saved);
   saveLocalStorageData(data);
-  pushItemToCloud(collectionName, data[collectionName][idx >= 0 ? idx : 0]);
-  return item;
+  return saved;
 }
 
 export async function deleteItem(collectionName, id) {
-  const data = getLocalStorageData();
-  if (Array.isArray(data[collectionName])) {
-    data[collectionName] = data[collectionName].filter(i => String(i.id) !== String(id));
-    if (collectionName === "players" && data.playerOfTheDay && String(data.playerOfTheDay.playerId) === String(id)) {
-      data.playerOfTheDay.active = false;
-      data.playerOfTheDay.playerName = "";
-      data.playerOfTheDay.playerId = null;
-    }
-    saveLocalStorageData(data);
+  const fb = await requireFirebase();
+  try {
+    await fb.deleteDoc(fb.doc(fb.db, collectionName, String(id)));
+  } catch (error) {
+    console.error(`[Academia] Firestore delete failed (${collectionName}):`, error);
+    throw new Error("فشل حذف السجل من السحابة؛ لم يتم تنفيذ الحذف محلياً.");
   }
-  getFirebase().then(fb => {
-    if (!fb?.isFirebaseOnline || !fb.db) return;
-    firestoreSync(fb.deleteDoc(fb.doc(fb.db, collectionName, String(id))), `delete ${collectionName}`);
-  });
+  const data = getLocalStorageData();
+  if (Array.isArray(data[collectionName])) data[collectionName] = data[collectionName].filter(i => String(i.id) !== String(id));
+  if (collectionName === "players" && data.playerOfTheDay && String(data.playerOfTheDay.playerId) === String(id)) {
+    data.playerOfTheDay.active = false;
+    data.playerOfTheDay.playerName = "";
+    data.playerOfTheDay.playerId = null;
+    await pushMetaToCloud(data);
+  }
+  saveLocalStorageData(data);
   return true;
 }
 
@@ -318,10 +334,10 @@ export async function deleteItem(collectionName, id) {
 // ============================================================
 export async function saveTickerNews(newsArray) {
   const data = getLocalStorageData();
-  data.tickerNews = Array.isArray(newsArray) ? newsArray : [];
-  saveLocalStorageData(data);
-  pushMetaToCloud(data);
-  return data.tickerNews;
+  const next = { ...data, tickerNews: Array.isArray(newsArray) ? newsArray : [] };
+  await pushMetaToCloud(next);
+  saveLocalStorageData(next);
+  return next.tickerNews;
 }
 
 // ============================================================
@@ -335,28 +351,21 @@ export async function setPlayerOfTheDay(details) {
   if (!Number.isFinite(age) || age < 4 || age > 60) throw new Error("أدخل عمراً صحيحاً");
   if (!String(playerPosition || "").trim()) throw new Error("اكتب مركز اللاعب");
   if (!Number.isFinite(score) || score < 1 || score > 10) throw new Error("التقييم يجب أن يكون من 1 إلى 10");
-  if (!Number.isInteger(imageIndex) || imageIndex < 0) throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
+  if (!Number.isInteger(imageIndex) || imageIndex < 0) throw new Error("رقم الصورة يجب أن يكون صفراً أو أكبر");
   const data = getLocalStorageData();
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + Number(hours) * 60 * 60 * 1000);
   const starObj = {
-    playerId: `album-${imageIndex}`,
-    playerImageNumber: imageIndex,
-    playerName: String(playerName).trim(),
-    playerAge: age,
-    playerPosition: String(playerPosition).trim(),
-    playerPhoto: `./images/players/${imageIndex}.png`,
-    number: imageIndex,
-    category: "",
-    reason: String(reason || "").trim() || "الأداء المتميز والالتزام في الأكاديمية",
+    playerId: `album-${imageIndex}`, playerImageNumber: imageIndex,
+    playerName: String(playerName).trim(), playerAge: age,
+    playerPosition: String(playerPosition).trim(), playerPhoto: `./images/players/${imageIndex}.png`,
+    number: imageIndex, category: "", reason: String(reason || "").trim() || "الأداء المتميز والالتزام في الأكاديمية",
     selectedAt: now.toISOString(),
-    expiresAt: expiresAt.toISOString(),
-    rating: score,
-    active: true
+    expiresAt: new Date(now.getTime() + Number(hours) * 3600000).toISOString(),
+    rating: score, active: true
   };
-  data.playerOfTheDay = starObj;
-  saveLocalStorageData(data);
-  pushMetaToCloud(data);
+  const next = { ...data, playerOfTheDay: starObj };
+  await pushMetaToCloud(next);
+  saveLocalStorageData(next);
   addActivity("⭐", `اختيار ${starObj.playerName} نجم اليوم`);
   return starObj;
 }
@@ -374,11 +383,10 @@ export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, reason =
 
 export async function togglePlayerOfTheDay(active) {
   const data = getLocalStorageData();
-  if (!data.playerOfTheDay) data.playerOfTheDay = { active: false };
-  data.playerOfTheDay.active = active;
-  saveLocalStorageData(data);
-  pushMetaToCloud(data);
-  return data.playerOfTheDay;
+  const next = { ...data, playerOfTheDay: { ...(data.playerOfTheDay || {}), active } };
+  await pushMetaToCloud(next);
+  saveLocalStorageData(next);
+  return next.playerOfTheDay;
 }
 
 // ============================================================
