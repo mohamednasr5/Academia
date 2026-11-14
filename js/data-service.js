@@ -5,11 +5,21 @@
 // public website. Adds: image upload (compressed), settings, convert
 // request → player, hashed admin auth, activity log.
 // =====================================================================
-import {
-  db, isFirebaseOnline, DATA_COLLECTIONS, META_DOC,
-  collection, doc, getDocs, getDoc, setDoc, deleteDoc, writeBatch
-} from "./firebase-config.js";
 import { DEFAULT_DATA } from "./default-data.js";
+
+// Firebase is loaded on demand, never on the critical first paint.
+// This lets the public site render its local cache before the SDK downloads.
+let firebaseModulePromise = null;
+async function getFirebase() {
+  if (!firebaseModulePromise) {
+    firebaseModulePromise = import("./firebase-config.js").catch(error => {
+      firebaseModulePromise = null;
+      console.warn("[Academia] Firebase SDK unavailable; using cached data:", error);
+      return null;
+    });
+  }
+  return firebaseModulePromise;
+}
 
 const STORAGE_KEY = "ahmadia_academy_data_v1"; // preserved from original repo
 const SESSION_KEY = "ahmadia_admin_session";
@@ -120,87 +130,86 @@ function firestoreSync(operationPromise, opName = "operation") {
 
 // Push a single item to its Firestore collection
 function pushItemToCloud(collectionName, item) {
-  if (!isFirebaseOnline || !db) return;
-  firestoreSync(
-    setDoc(doc(db, collectionName, String(item.id)), item, { merge: true }),
-    `save ${collectionName}`
-  );
+  getFirebase().then(fb => {
+    if (!fb?.isFirebaseOnline || !fb.db) return;
+    firestoreSync(
+      fb.setDoc(fb.doc(fb.db, collectionName, String(item.id)), item, { merge: true }),
+      `save ${collectionName}`
+    );
+  });
 }
 
 // Pull ALL data from Firestore and merge into local (cloud wins for shared content)
 export async function syncFromCloud() {
-  if (!isFirebaseOnline || !db) return null;
+  const fb = await getFirebase();
+  if (!fb?.isFirebaseOnline || !fb.db) return null;
+
   try {
     const local = getLocalStorageData();
-    let changed = false;
+    const timeout = promise => Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 7000))
+    ]);
 
-    // Pull each collection
-    for (const colName of DATA_COLLECTIONS) {
+    // Fetch every collection and the metadata document concurrently.
+    const collectionJobs = fb.DATA_COLLECTIONS.map(async colName => {
       try {
-        const snap = await Promise.race([
-          getDocs(collection(db, colName)),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 4000))
-        ]);
-        if (!snap.empty) {
-          const cloudItems = [];
-          snap.forEach(d => { const v = d.data(); if (v && v.id) cloudItems.push(v); });
-          // Merge: cloud items override local by id, keep local-only items too
-          const localItems = Array.isArray(local[colName]) ? local[colName] : [];
-          const merged = [...cloudItems];
-          localItems.forEach(li => {
-            if (!cloudItems.some(ci => String(ci.id) === String(li.id))) merged.push(li);
-          });
-          if (JSON.stringify(local[colName]) !== JSON.stringify(merged)) {
-            local[colName] = merged;
-            changed = true;
-          }
-        }
-      } catch (e) { /* ignore single-collection errors */ }
-    }
-
-    // Pull academy_meta (tickerNews, playerOfTheDay, settings, activity)
-    try {
-      const metaSnap = await getDoc(doc(db, META_DOC, "state"));
-      if (metaSnap.exists()) {
-        const meta = metaSnap.data();
-        if (Array.isArray(meta.tickerNews) && meta.tickerNews.length) {
-          local.tickerNews = meta.tickerNews; changed = true;
-        }
-        if (meta.playerOfTheDay) {
-          local.playerOfTheDay = { ...local.playerOfTheDay, ...meta.playerOfTheDay }; changed = true;
-        }
-        if (meta.settings) {
-          local.settings = { ...local.settings, ...meta.settings }; changed = true;
-        }
-        if (Array.isArray(meta.activity) && meta.activity.length) {
-          local.activity = meta.activity; changed = true;
-        }
+        const snap = await timeout(fb.getDocs(fb.collection(fb.db, colName)));
+        if (snap.empty) return;
+        const cloudItems = [];
+        snap.forEach(itemDoc => {
+          const value = itemDoc.data();
+          if (value && value.id) cloudItems.push(value);
+        });
+        const localItems = Array.isArray(local[colName]) ? local[colName] : [];
+        const merged = [...cloudItems];
+        localItems.forEach(item => {
+          if (!cloudItems.some(cloudItem => String(cloudItem.id) === String(item.id))) merged.push(item);
+        });
+        local[colName] = merged;
+      } catch (error) {
+        console.warn(`[Academia] Cloud collection ${colName} unavailable:`, error.message);
       }
-    } catch (e) { /* ignore meta errors */ }
+    });
 
-    if (changed) {
-      saveLocalStorageData(local);
-      console.log("[Academia] Cloud data merged into local cache.");
-    }
+    const metaJob = (async () => {
+      try {
+        const metaSnap = await timeout(fb.getDoc(fb.doc(fb.db, fb.META_DOC, "state")));
+        if (!metaSnap.exists()) return;
+        const meta = metaSnap.data();
+        if (Array.isArray(meta.tickerNews)) local.tickerNews = meta.tickerNews;
+        if (meta.playerOfTheDay) local.playerOfTheDay = { ...local.playerOfTheDay, ...meta.playerOfTheDay };
+        if (meta.settings) local.settings = { ...local.settings, ...meta.settings };
+        if (Array.isArray(meta.activity)) local.activity = meta.activity;
+      } catch (error) {
+        console.warn("[Academia] Cloud metadata unavailable:", error.message);
+      }
+    })();
+
+    await Promise.all([...collectionJobs, metaJob]);
+    saveLocalStorageData(local);
+    console.log("[Academia] Cloud cache refreshed in parallel.");
     return local;
-  } catch (err) {
-    console.warn("[Academia] syncFromCloud failed:", err.message);
+  } catch (error) {
+    console.warn("[Academia] syncFromCloud failed:", error.message);
     return null;
   }
 }
 
 // Push the meta doc (tickerNews, playerOfTheDay, settings, activity)
 function pushMetaToCloud(data) {
-  if (!isFirebaseOnline || !db) return;
-  firestoreSync(
-    setDoc(doc(db, META_DOC, "state"), {
-      tickerNews: data.tickerNews || [],
-      playerOfTheDay: data.playerOfTheDay || { active: false },
-      settings: data.settings || {},
-      activity: data.activity || []
-    }, { merge: true }),
-    "push meta"
-  );
+  getFirebase().then(fb => {
+    if (!fb?.isFirebaseOnline || !fb.db) return;
+    firestoreSync(
+      fb.setDoc(fb.doc(fb.db, fb.META_DOC, "state"), {
+        tickerNews: data.tickerNews || [],
+        playerOfTheDay: data.playerOfTheDay || { active: false },
+        settings: data.settings || {},
+        activity: data.activity || []
+      }, { merge: true }),
+      "push meta"
+    );
+  });
 }
 
 // ============================================================
@@ -283,9 +292,10 @@ export async function deleteItem(collectionName, id) {
     }
     saveLocalStorageData(data);
   }
-  if (isFirebaseOnline && db) {
-    firestoreSync(deleteDoc(doc(db, collectionName, String(id))), `delete ${collectionName}`);
-  }
+  getFirebase().then(fb => {
+    if (!fb?.isFirebaseOnline || !fb.db) return;
+    firestoreSync(fb.deleteDoc(fb.doc(fb.db, collectionName, String(id))), `delete ${collectionName}`);
+  });
   return true;
 }
 
@@ -536,13 +546,14 @@ export async function changeAdminPassword(newPassword) {
   if (!newPassword || newPassword.length < 6) {
     throw new Error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
   }
-  if (!isFirebaseOnline || !db) {
+  const fb = await getFirebase();
+  if (!fb?.isFirebaseOnline || !fb.db) {
     throw new Error("تعذر الاتصال بقاعدة البيانات؛ لم يتم تغيير رمز المرور. تحقق من اتصال Firebase ثم أعد المحاولة.");
   }
 
   const hash = await sha256(newPassword);
   try {
-    await setDoc(doc(db, META_DOC, "state"), {
+    await fb.setDoc(fb.doc(fb.db, fb.META_DOC, "state"), {
       settings: { adminPasswordHash: hash }
     }, { merge: true });
   } catch (error) {
