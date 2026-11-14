@@ -256,36 +256,26 @@
       </div>
     </section>
 
-    <!-- ==================== PLAYERS DIRECTORY ==================== -->
-    <section id="players" class="players-section">
+    <!-- ==================== PLAYERS SHOWCASE ==================== -->
+    <section id="players" class="players-section players-showcase-section">
       <div class="container">
         <div class="section-title-wrap reveal">
           <span class="gold-badge">نجوم المستقبل</span>
-          <h2 class="section-title">كتالوج <span class="gold-text">لاعبي الأكاديمية</span></h2>
-          <p class="section-desc">استعرض مواهب ولاعبي الأكاديمية مع أسماء وأعمار ومراكز وإنجازات كل لاعب</p>
+          <h2 class="section-title">نجوم <span class="gold-text">أكاديمية الأحمدية</span></h2>
+          <p class="section-desc">وجوه صنعت الشغف.. ومواهب تصنع المستقبل</p>
         </div>
 
-        <div class="players-toolbar reveal">
-          <div class="players-search">
-            <input type="search" id="players-search-input" placeholder="ابحث باسم اللاعب أو المركز..." aria-label="بحث عن لاعب">
+        <div class="players-carousel reveal" id="players-carousel" aria-label="معرض لاعبي الأكاديمية">
+          <div class="players-carousel-track" id="players-carousel-track">
+            <div class="players-carousel-loading">جارٍ تجهيز نجوم الأكاديمية...</div>
           </div>
-          <select class="filter-select" id="players-position-filter" aria-label="تصفية حسب المركز">
-            <option value="all">كل المراكز</option>
-          </select>
-          <div class="players-filters" id="players-filters-container">
-            <button class="filter-btn active" data-filter="all">الجميع</button>
-            <button class="filter-btn" data-filter="2014-2016">براعم (2014-2016)</button>
-            <button class="filter-btn" data-filter="2012-2014">أشبال (2012-2014)</button>
-            <button class="filter-btn" data-filter="2010-2012">ناشئين (2010-2012)</button>
-            <button class="filter-btn" data-filter="2008-2010">شباب (2008-2010)</button>
+          <button class="players-carousel-arrow players-carousel-prev" type="button" aria-label="الصورة السابقة">‹</button>
+          <button class="players-carousel-arrow players-carousel-next" type="button" aria-label="الصورة التالية">›</button>
+          <div class="players-carousel-bottom">
+            <span class="players-carousel-counter" id="players-carousel-counter">01 / 28</span>
+            <div class="players-carousel-dots" id="players-carousel-dots" aria-label="اختيار صورة"></div>
+            <button class="players-carousel-pause" id="players-carousel-pause" type="button" aria-pressed="false">Ⅱ إيقاف</button>
           </div>
-        </div>
-
-        <div class="players-grid stagger" id="players-container">
-          <div class="skeleton-card" style="min-height:240px;"></div>
-          <div class="skeleton-card" style="min-height:240px;"></div>
-          <div class="skeleton-card" style="min-height:240px;"></div>
-          <div class="skeleton-card" style="min-height:240px;"></div>
         </div>
       </div>
     </section>

@@ -9,7 +9,6 @@ import { getAllData, submitRegistrationRequest } from "./data-service.js";
 let academyData = null;
 let countdownInterval = null;
 let deferredPrompt = null;
-let currentPlayersFilter = { category: "all", position: "all", search: "" };
 
 // ============================================================
 // INIT
@@ -21,7 +20,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initPWA();
   await loadAndRenderAll();
   setupRegistrationForm();
-  setupPlayersControls();
   setupPlayerDetailClose();
 
   // Real-time sync: re-render when data changes (admin edits or cloud pull)
@@ -434,106 +432,163 @@ function formatDate(d) {
 // ============================================================
 // PLAYERS DIRECTORY — search + filter + detail modal
 // ============================================================
-function renderPlayers(players) {
-  populatePositionFilter(players);
-  applyPlayersFilter(players);
-}
+// ============================================================
+// CINEMATIC PLAYERS CAROUSEL — images/players/0.png ... 27.png
+// ============================================================
+let playersCarouselIndex = 0;
+let playersCarouselTimer = null;
+let playersCarouselPaused = false;
+let playersCarouselTouchStartX = 0;
+let playersCarouselBound = false;
 
-function populatePositionFilter(players) {
-  const sel = document.getElementById("players-position-filter");
-  if (!sel) return;
-  const positions = [...new Set(players.map(p => p.position).filter(Boolean))].sort();
-  const current = sel.value || "all";
-  sel.innerHTML = `<option value="all">كل المراكز</option>` +
-    positions.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-  sel.value = current;
-}
+function renderPlayers() {
+  const track = document.getElementById("players-carousel-track");
+  const root = document.getElementById("players-carousel");
+  if (!track || !root) return;
 
-function applyPlayersFilter(players) {
-  const c = document.getElementById("players-container");
-  if (!c) return;
-  let filtered = players;
-  if (currentPlayersFilter.category !== "all") {
-    filtered = filtered.filter(p => p.category === currentPlayersFilter.category);
-  }
-  if (currentPlayersFilter.position !== "all") {
-    filtered = filtered.filter(p => p.position === currentPlayersFilter.position);
-  }
-  if (currentPlayersFilter.search.trim()) {
-    const q = currentPlayersFilter.search.trim().toLowerCase();
-    filtered = filtered.filter(p =>
-      (p.name || "").toLowerCase().includes(q) ||
-      (p.position || "").toLowerCase().includes(q) ||
-      (p.category || "").toLowerCase().includes(q)
-    );
-  }
-
-  if (!filtered.length) {
-    c.innerHTML = emptyState("🔍", "لا يوجد لاعبون مطابقون للبحث", "جرّب تعديل الفلاتر أو كلمة البحث.");
-    return;
-  }
-
-  c.innerHTML = filtered.map(p => {
-    const statusBadge = p.registrationStatus === "pending"
-      ? `<span class="badge-status pending" style="position:absolute;top:12px;right:12px;font-size:0.66rem;">قيد التسجيل</span>`
-      : "";
+  const slides = Array.from({ length: 28 }, (_, index) => {
+    const src = `./images/players/${index}.png`;
+    const isCoach = index === 0;
     return `
-      <div class="player-card" data-player-id="${escapeHtml(p.id)}" tabindex="0" role="button" aria-label="عرض ملف ${escapeHtml(p.name)}">
-        ${statusBadge}
-        <div class="player-card-num">#${p.number || 10}</div>
-        <div class="player-img-wrap">
-          <img src="${p.photo || './images/logo.jpg'}" alt="${escapeHtml(p.name)}" class="player-img" loading="lazy" onerror="this.src='./images/logo.jpg'">
-        </div>
-        <h4 class="player-name">${escapeHtml(p.name)}</h4>
-        <div class="player-pos-badge">${escapeHtml(p.position || 'لاعب')}</div>
-        <div class="player-age-badge">
-          <span>🎂 ${p.age || 12} سنة</span>
-          <span>•</span>
-          <span>${escapeHtml(p.foot || 'اليمنى')}</span>
-        </div>
-        <div class="player-stats-mini">
-          <div><strong>${p.goals || 0}</strong> أهداف</div>
-          <div><strong>${p.assists || 0}</strong> تمريرات</div>
-          <div><strong>${p.matches || 0}</strong> مباريات</div>
-        </div>
-      </div>`;
-  }).join("");
-
-  // Wire click → detail modal
-  c.querySelectorAll(".player-card").forEach(card => {
-    card.addEventListener("click", () => openPlayerDetail(card.getAttribute("data-player-id")));
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openPlayerDetail(card.getAttribute("data-player-id")); }
-    });
+      <button class="players-carousel-slide" type="button"
+        data-slide-index="${index}" aria-label="${isCoach ? "المدربة" : `اللاعب رقم ${index}`}" tabindex="-1">
+        <span class="players-carousel-image-frame">
+          <img src="${src}" alt="${isCoach ? "المدربة" : `اللاعب رقم ${index}`}"
+            loading="${index < 3 ? "eager" : "lazy"}" draggable="false"
+            onerror="this.closest('.players-carousel-slide').classList.add('image-missing')">
+        </span>
+        <span class="players-carousel-slide-number">${isCoach ? "الجهاز الفني" : String(index).padStart(2, "0")}</span>
+      </button>`;
   });
+  track.innerHTML = slides.join("");
+  playersCarouselIndex = 0;
+  updatePlayersCarousel();
+  setupPlayersCarouselControls();
+  startPlayersCarousel();
 }
 
-function setupPlayersControls() {
-  const filterBtns = document.querySelectorAll("#players-filters-container .filter-btn");
-  filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      filterBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentPlayersFilter.category = btn.getAttribute("data-filter");
-      if (academyData) applyPlayersFilter(academyData.players || []);
-    });
+function updatePlayersCarousel() {
+  const track = document.getElementById("players-carousel-track");
+  const counter = document.getElementById("players-carousel-counter");
+  const dots = document.getElementById("players-carousel-dots");
+  if (!track) return;
+
+  const slides = [...track.querySelectorAll(".players-carousel-slide")];
+  const total = slides.length;
+  if (!total) return;
+
+  slides.forEach((slide, index) => {
+    let offset = index - playersCarouselIndex;
+    if (offset > total / 2) offset -= total;
+    if (offset < -total / 2) offset += total;
+    slide.className = "players-carousel-slide";
+    slide.dataset.position = String(offset);
+    slide.setAttribute("aria-hidden", offset === 0 ? "false" : "true");
+    slide.tabIndex = offset === 0 ? 0 : -1;
+    if (offset === 0) slide.classList.add("is-active");
+    else if (Math.abs(offset) === 1) slide.classList.add(offset < 0 ? "is-prev" : "is-next");
+    else if (Math.abs(offset) === 2) slide.classList.add("is-far");
+    else slide.classList.add("is-hidden");
   });
-  const posSel = document.getElementById("players-position-filter");
-  if (posSel) posSel.addEventListener("change", () => {
-    currentPlayersFilter.position = posSel.value;
-    if (academyData) applyPlayersFilter(academyData.players || []);
-  });
-  const search = document.getElementById("players-search-input");
-  if (search) {
-    let t;
-    search.addEventListener("input", () => {
-      clearTimeout(t);
-      t = setTimeout(() => {
-        currentPlayersFilter.search = search.value;
-        if (academyData) applyPlayersFilter(academyData.players || []);
-      }, 180);
+
+  if (counter) counter.textContent = `${String(playersCarouselIndex + 1).padStart(2, "0")} / ${String(total).padStart(2, "0")}`;
+
+  if (dots) {
+    if (!dots.children.length) {
+      dots.innerHTML = slides.map((_, i) =>
+        `<button type="button" class="players-carousel-dot" data-go-to="${i}" aria-label="الصورة ${i + 1}"></button>`
+      ).join("");
+      dots.querySelectorAll("[data-go-to]").forEach(dot => {
+        dot.addEventListener("click", () => {
+          playersCarouselIndex = Number(dot.dataset.goTo);
+          updatePlayersCarousel();
+          restartPlayersCarousel();
+        });
+      });
+    }
+    dots.querySelectorAll(".players-carousel-dot").forEach((dot, i) => {
+      dot.classList.toggle("active", i === playersCarouselIndex);
+      dot.setAttribute("aria-current", i === playersCarouselIndex ? "true" : "false");
     });
   }
+}
+
+function movePlayersCarousel(direction) {
+  const total = document.querySelectorAll("#players-carousel-track .players-carousel-slide").length;
+  if (!total) return;
+  playersCarouselIndex = (playersCarouselIndex + direction + total) % total;
+  updatePlayersCarousel();
+}
+
+function startPlayersCarousel() {
+  stopPlayersCarousel();
+  if (playersCarouselPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  playersCarouselTimer = window.setInterval(() => movePlayersCarousel(1), 3600);
+}
+
+function stopPlayersCarousel() {
+  if (playersCarouselTimer) {
+    window.clearInterval(playersCarouselTimer);
+    playersCarouselTimer = null;
+  }
+}
+
+function restartPlayersCarousel() {
+  stopPlayersCarousel();
+  startPlayersCarousel();
+}
+
+function setupPlayersCarouselControls() {
+  const root = document.getElementById("players-carousel");
+  if (!root || playersCarouselBound) return;
+  playersCarouselBound = true;
+
+  root.querySelector(".players-carousel-prev")?.addEventListener("click", () => {
+    movePlayersCarousel(-1);
+    restartPlayersCarousel();
+  });
+  root.querySelector(".players-carousel-next")?.addEventListener("click", () => {
+    movePlayersCarousel(1);
+    restartPlayersCarousel();
+  });
+
+  const pause = document.getElementById("players-carousel-pause");
+  pause?.addEventListener("click", () => {
+    playersCarouselPaused = !playersCarouselPaused;
+    pause.setAttribute("aria-pressed", String(playersCarouselPaused));
+    pause.innerHTML = playersCarouselPaused ? "▶ تشغيل" : "Ⅱ إيقاف";
+    if (playersCarouselPaused) stopPlayersCarousel();
+    else startPlayersCarousel();
+  });
+
+  root.addEventListener("mouseenter", stopPlayersCarousel);
+  root.addEventListener("mouseleave", startPlayersCarousel);
+  root.addEventListener("focusin", stopPlayersCarousel);
+  root.addEventListener("focusout", () => {
+    window.setTimeout(() => {
+      if (!root.contains(document.activeElement)) startPlayersCarousel();
+    }, 0);
+  });
+
+  root.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft") { event.preventDefault(); movePlayersCarousel(1); restartPlayersCarousel(); }
+    if (event.key === "ArrowRight") { event.preventDefault(); movePlayersCarousel(-1); restartPlayersCarousel(); }
+  });
+
+  root.addEventListener("touchstart", event => {
+    playersCarouselTouchStartX = event.changedTouches[0].clientX;
+    stopPlayersCarousel();
+  }, { passive: true });
+  root.addEventListener("touchend", event => {
+    const delta = event.changedTouches[0].clientX - playersCarouselTouchStartX;
+    if (Math.abs(delta) > 45) movePlayersCarousel(delta < 0 ? 1 : -1);
+    startPlayersCarousel();
+  }, { passive: true });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopPlayersCarousel();
+    else startPlayersCarousel();
+  });
 }
 
 function openPlayerDetail(playerId) {
