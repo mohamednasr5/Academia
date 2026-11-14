@@ -119,7 +119,6 @@ function stripImages(data) {
 // FIRESTORE SYNC
 // ============================================================
 function firestoreSync(operationPromise, opName = "operation") {
-  if (!isFirebaseOnline || !db) return;
   Promise.race([
     operationPromise,
     new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3500))
