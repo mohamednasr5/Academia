@@ -23,7 +23,8 @@ export const DEFAULT_DATA = {
     developerName: "المهندس محمد حماد",
     developerFacebook: "https://www.facebook.com/en.mohamed.nasr",
     developerWhatsapp: "201279934735",
-    foundedYear: "2020"
+    foundedYear: "2020",
+    adminPasswordHash: "64533647a5d1df6de07cdc1a3a51f4c0fcbb35fffd51b5c38f32c949e24a210c"
   },
 
   // -------- COACHES --------
