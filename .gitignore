@@ -1,0 +1,21 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+firebase-debug.log
+
+# Dependencies (not used — pure static site, no build step)
+node_modules/
+
+# Local env
+.env
+.env.local

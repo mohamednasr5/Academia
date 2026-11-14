@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Admin dashboard: keep out of search indexes
+Disallow: /admin.html
+
+Sitemap: https://mohamednasr5.github.io/Academia/sitemap.xml

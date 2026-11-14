@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0b0f19"/>
+    </radialGradient>
+    <linearGradient id="goldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fceda2"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#997819"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="url(#bgGlow)" stroke="url(#goldBorder)" stroke-width="4"/>
+  <!-- Silhouette head -->
+  <circle cx="100" cy="75" r="32" fill="#d4af37" opacity="0.9"/>
+  <!-- Silhouette shoulders/body with soccer jersey -->
+  <path d="M42 165 C45 125, 75 115, 100 115 C125 115, 155 125, 158 165 Z" fill="#d4af37" opacity="0.9"/>
+  <circle cx="100" cy="140" r="10" fill="#0b0f19"/>
+</svg>
