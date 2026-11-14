@@ -66,6 +66,18 @@ function saveLocalStorageData(data) {
 // Ensure the loaded object has every collection + settings + enriched fields
 function migrateData(parsed) {
   const defaults = DEFAULT_DATA;
+  // Remove legacy demo seed rows (numeric IDs such as player-1 / coach-2).
+  // Genuine records are rehydrated from Firestore during the cloud sync.
+  const seededId = /^(players?|coaches?|news|trophies|schedules?|upcomingMatches|matchResults|registrationRequests|activity)-(?:[1-9]\\d*)$/i;
+  ["players", "coaches", "news", "trophies", "schedules", "upcomingMatches", "matchResults", "registrationRequests", "activity"].forEach(key => {
+    if (Array.isArray(parsed[key])) parsed[key] = parsed[key].filter(item => !seededId.test(String(item?.id || "")));
+  });
+  if (Array.isArray(parsed.tickerNews)) {
+    parsed.tickerNews = parsed.tickerNews.filter(item => !/^🔥 فتح باب التقديم والتسجيل للموسم الرياضي الجديد/.test(String(item || "")));
+  }
+  if (parsed.playerOfTheDay?.playerId && /^player-[1-9]\\d*$/.test(String(parsed.playerOfTheDay.playerId))) {
+    parsed.playerOfTheDay = { active: false };
+  }
   if (!Array.isArray(parsed.players)) parsed.players = [];
   if (!Array.isArray(parsed.coaches)) parsed.coaches = [];
   if (!Array.isArray(parsed.trophies)) parsed.trophies = [];
@@ -150,44 +162,47 @@ export async function syncFromCloud() {
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 7000))
     ]);
 
-    // Fetch every collection and the metadata document concurrently.
+    // Firestore is the source of truth: a successful empty collection means no records.
     const collectionJobs = fb.DATA_COLLECTIONS.map(async colName => {
       try {
         const snap = await timeout(fb.getDocs(fb.collection(fb.db, colName)));
-        if (snap.empty) return;
         const cloudItems = [];
         snap.forEach(itemDoc => {
           const value = itemDoc.data();
           if (value && value.id) cloudItems.push(value);
         });
-        const localItems = Array.isArray(local[colName]) ? local[colName] : [];
-        const merged = [...cloudItems];
-        localItems.forEach(item => {
-          if (!cloudItems.some(cloudItem => String(cloudItem.id) === String(item.id))) merged.push(item);
-        });
-        local[colName] = merged;
+        local[colName] = cloudItems;
       } catch (error) {
-        console.warn(`[Academia] Cloud collection ${colName} unavailable:`, error.message);
+        // Keep the last cache only when this specific cloud read failed.
+        console.warn(`[Academia] Cloud collection ${colName} unavailable; retaining cache:`, error.message);
       }
     });
 
     const metaJob = (async () => {
       try {
         const metaSnap = await timeout(fb.getDoc(fb.doc(fb.db, fb.META_DOC, "state")));
-        if (!metaSnap.exists()) return;
-        const meta = metaSnap.data();
-        if (Array.isArray(meta.tickerNews)) local.tickerNews = meta.tickerNews;
-        if (meta.playerOfTheDay) local.playerOfTheDay = { ...local.playerOfTheDay, ...meta.playerOfTheDay };
-        if (meta.settings) local.settings = { ...local.settings, ...meta.settings };
-        if (Array.isArray(meta.activity)) local.activity = meta.activity;
+        if (!metaSnap.exists()) {
+          local.tickerNews = [];
+          local.playerOfTheDay = { active: false };
+          local.activity = [];
+          return;
+        }
+        const meta = metaSnap.data() || {};
+        local.tickerNews = Array.isArray(meta.tickerNews) ? meta.tickerNews : [];
+        local.playerOfTheDay = meta.playerOfTheDay && typeof meta.playerOfTheDay === "object"
+          ? meta.playerOfTheDay : { active: false };
+        local.activity = Array.isArray(meta.activity) ? meta.activity : [];
+        if (meta.settings && typeof meta.settings === "object") {
+          local.settings = { ...local.settings, ...meta.settings };
+        }
       } catch (error) {
-        console.warn("[Academia] Cloud metadata unavailable:", error.message);
+        console.warn("[Academia] Cloud metadata unavailable; retaining cached metadata:", error.message);
       }
     })();
 
     await Promise.all([...collectionJobs, metaJob]);
     saveLocalStorageData(local);
-    console.log("[Academia] Cloud cache refreshed in parallel.");
+    console.log("[Academia] Firestore is now the authoritative data source.");
     return local;
   } catch (error) {
     console.warn("[Academia] syncFromCloud failed:", error.message);
