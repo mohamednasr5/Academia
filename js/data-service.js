@@ -226,22 +226,6 @@ export async function syncFromCloud() {
   }
 }
 
-// Push the meta doc (tickerNews, playerOfTheDay, settings, activity)
-function pushMetaToCloud(data) {
-  getFirebase().then(fb => {
-    if (!fb?.isFirebaseOnline || !fb.db) return;
-    firestoreSync(
-      fb.setDoc(fb.doc(fb.db, fb.META_DOC, "state"), {
-        tickerNews: data.tickerNews || [],
-        playerOfTheDay: data.playerOfTheDay || { active: false },
-        settings: data.settings || {},
-        activity: data.activity || []
-      }, { merge: true }),
-      "push meta"
-    );
-  });
-}
-
 // ============================================================
 // INITIALIZATION
 // ============================================================
