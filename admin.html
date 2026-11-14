@@ -32,9 +32,7 @@
       <div style="margin-top:18px;">
         <a href="./index.html" style="color:var(--gold-light);font-size:0.84rem;">← العودة للموقع الرئيسي</a>
       </div>
-      <p style="margin-top:14px;font-size:0.72rem;color:var(--text-dim);line-height:1.6;">
-        🔒 افتراضي: <code style="direction:ltr;">ahmadia2026</code> — يمكن تغييره من تبويب الإعدادات العامة. لتحقيق أمان كامل من جانب الخادم، فعّل Firebase Authentication وقواعد الأمان (راجع README).
-      </p>
+
     </div>
   </div>
 
@@ -398,7 +396,11 @@
             <form id="form-change-password">
               <div class="admin-form-group">
                 <label class="admin-label">رمز المرور الجديد <span class="req">*</span></label>
-                <input type="password" id="new-admin-password" class="admin-input" minlength="6" placeholder="6 أحرف على الأقل" required>
+                <input type="password" id="new-admin-password" class="admin-input" minlength="6" autocomplete="new-password" placeholder="أدخل رمز المرور الجديد" required>
+              </div>
+              <div class="admin-form-group">
+                <label class="admin-label">تأكيد رمز المرور الجديد <span class="req">*</span></label>
+                <input type="password" id="confirm-admin-password" class="admin-input" minlength="6" autocomplete="new-password" placeholder="أعد إدخال رمز المرور" required>
               </div>
               <button type="submit" class="btn-admin-action" style="background:var(--gold-gradient);color:#07110f;font-weight:800;padding:12px 20px;border:none;">🔑 تحديث رمز المرور</button>
             </form>
