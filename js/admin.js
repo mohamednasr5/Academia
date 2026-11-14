@@ -209,7 +209,7 @@ function renderPotdTab(data) {
       imagePreview.innerHTML = '<span style="color:var(--text-muted);">أدخل رقم صورة من 0 إلى 27 لعرض المعاينة</span>';
       return;
     }
-    const label = number === 0 ? "المدربة" : `اللاعب رقم ${number}`;
+    const label = number === 0 ? "المدرب الفني" : `اللاعب رقم ${number}`;
     imagePreview.innerHTML = `
       <img src="./images/players/${number}.png" alt="${label}"
         style="width:120px;height:150px;object-fit:cover;object-position:top;border-radius:12px;border:2px solid var(--gold-primary);"
