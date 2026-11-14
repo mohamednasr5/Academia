@@ -204,8 +204,8 @@ function renderPotdTab(data) {
   const updateImagePreview = () => {
     if (!imageInput || !imagePreview) return;
     const raw = imageInput.value.trim(), number = Number(raw);
-    if (raw === "" || !Number.isInteger(number) || number < 0 || number > 27) {
-      imagePreview.innerHTML = '<span style="color:var(--text-muted);">أدخل رقم صورة من 0 إلى 27 لعرض المعاينة</span>';
+    if (raw === "" || !Number.isInteger(number) || number < 0) {
+      imagePreview.innerHTML = '<span style="color:var(--text-muted);">أدخل رقم صورة رقم يبدأ من 0 لعرض المعاينة</span>';
       return;
     }
     const label = number === 0 ? "المدرب الفني" : `صورة اللاعب رقم ${number}`;
@@ -254,7 +254,7 @@ function setupPotdForm() {
     const reason = document.getElementById("potd-reason-input").value.trim();
     if (!playerName || !playerPosition || !Number.isFinite(playerAge) || playerAge < 4 || playerAge > 60 ||
         !Number.isFinite(rating) || rating < 1 || rating > 10 ||
-        !Number.isInteger(imageNumber) || imageNumber < 0 || imageNumber > 27 || !reason) {
+        !Number.isInteger(imageNumber) || imageNumber < 0 || !reason) {
       adminToast("راجع الاسم والعمر والمركز والتقييم ورقم الصورة وسبب التكريم", "error");
       return;
     }
