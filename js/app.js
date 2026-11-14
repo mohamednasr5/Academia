@@ -95,12 +95,12 @@ function applySettings(s) {
   const phoneLink = document.getElementById("footer-phone-link");
   const waLink = document.getElementById("footer-whatsapp-link");
   if (phoneLink && s.phone) { phoneLink.textContent = s.phone; phoneLink.href = `tel:${s.phone}`; }
-  if (waLink && s.whatsapp) { waLink.textContent = `wa.me/${s.whatsapp}`; waLink.href = `https://wa.me/${s.whatsapp}`; }
+  if (waLink) { waLink.textContent = "01227506392"; waLink.href = "https://wa.me/201227506392"; waLink.target = "_blank"; waLink.rel = "noopener noreferrer"; }
   // Social links
   const socialWrap = document.getElementById("footer-social-links");
   if (socialWrap && s.whatsapp) {
     socialWrap.innerHTML = `
-      <a href="https://wa.me/${escapeHtml(s.whatsapp)}" target="_blank" class="social-icon-btn" title="واتساب">💬</a>
+      <a href="https://wa.me/201227506392" target="_blank" rel="noopener noreferrer" class="social-icon-btn" title="واتساب الإدارة">💬</a>
       <a href="tel:${escapeHtml(s.phone || '')}" class="social-icon-btn" title="اتصال">📞</a>
       ${s.facebook ? `<a href="${escapeHtml(s.facebook)}" target="_blank" class="social-icon-btn" title="فيسبوك">📘</a>` : ''}
       ${s.instagram ? `<a href="${escapeHtml(s.instagram)}" target="_blank" class="social-icon-btn" title="انستجرام">📷</a>` : ''}
