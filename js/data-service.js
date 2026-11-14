@@ -335,7 +335,7 @@ export async function setPlayerOfTheDay(details) {
   if (!Number.isFinite(age) || age < 4 || age > 60) throw new Error("أدخل عمراً صحيحاً");
   if (!String(playerPosition || "").trim()) throw new Error("اكتب مركز اللاعب");
   if (!Number.isFinite(score) || score < 1 || score > 10) throw new Error("التقييم يجب أن يكون من 1 إلى 10");
-  if (!Number.isInteger(imageIndex) || imageIndex < 0 || imageIndex > 27) throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
+  if (!Number.isInteger(imageIndex) || imageIndex < 0) throw new Error("رقم الصورة يجب أن يكون من 0 إلى 27");
   const data = getLocalStorageData();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + Number(hours) * 60 * 60 * 1000);
