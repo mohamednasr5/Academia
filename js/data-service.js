@@ -68,14 +68,14 @@ function migrateData(parsed) {
   const defaults = DEFAULT_DATA;
   // Remove legacy demo seed rows (numeric IDs such as player-1 / coach-2).
   // Genuine records are rehydrated from Firestore during the cloud sync.
-  const seededId = /^(players?|coaches?|news|trophies|schedules?|upcomingMatches|matchResults|registrationRequests|activity)-(?:[1-9]\\d*)$/i;
+  const seededId = /^(players?|coaches?|news|trophies|schedules?|upcomingMatches|matchResults|registrationRequests|activity)-(?:[1-9]\d*)$/i;
   ["players", "coaches", "news", "trophies", "schedules", "upcomingMatches", "matchResults", "registrationRequests", "activity"].forEach(key => {
     if (Array.isArray(parsed[key])) parsed[key] = parsed[key].filter(item => !seededId.test(String(item?.id || "")));
   });
   if (Array.isArray(parsed.tickerNews)) {
     parsed.tickerNews = parsed.tickerNews.filter(item => !/^🔥 فتح باب التقديم والتسجيل للموسم الرياضي الجديد/.test(String(item || "")));
   }
-  if (parsed.playerOfTheDay?.playerId && /^player-[1-9]\\d*$/.test(String(parsed.playerOfTheDay.playerId))) {
+  if (parsed.playerOfTheDay?.playerId && /^player-[1-9]\d*$/.test(String(parsed.playerOfTheDay.playerId))) {
     parsed.playerOfTheDay = { active: false };
   }
   if (!Array.isArray(parsed.players)) parsed.players = [];
