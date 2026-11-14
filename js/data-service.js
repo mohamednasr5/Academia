@@ -312,13 +312,13 @@ export export async function setPlayerOfTheDayByImage(imageNumber, hours = 24, r
   const data = getLocalStorageData();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + hours * 60 * 60 * 1000);
-  const playerName = imageIndex === 0 ? "المدربة" : `اللاعب رقم ${imageIndex}`;
+  const playerName = imageIndex === 0 ? "المدرب الفني" : `اللاعب رقم ${imageIndex}`;
   const starObj = {
     playerId: `album-${imageIndex}`,
     playerImageNumber: imageIndex,
     playerName,
     playerAge: "",
-    playerPosition: imageIndex === 0 ? "الجهاز الفني" : "لاعب بالأكاديمية",
+    playerPosition: imageIndex === 0 ? "المدرب الفني" : "لاعب بالأكاديمية",
     playerPhoto: `./images/players/${imageIndex}.png`,
     number: imageIndex,
     category: "",
