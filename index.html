@@ -43,6 +43,9 @@
   <!-- Preconnect for fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="image" href="./images/logo.jpg" fetchpriority="high">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap"></noscript>
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 
   <!-- Styles -->
@@ -161,7 +164,7 @@
             <div class="hero-chip chip-1"><span class="chip-dot"></span> تدريبات يومية</div>
             <div class="hero-chip chip-2"><span class="chip-dot"></span> فئات من 6 إلى 16 سنة</div>
             <div class="hero-logo-frame">
-              <img src="./images/logo.jpg" alt="شعار أكاديمية مركز شباب الأحمدية" class="hero-logo-img" id="hero-logo-img" loading="eager">
+              <img src="./images/logo.jpg" alt="شعار أكاديمية مركز شباب الأحمدية" class="hero-logo-img" id="hero-logo-img" loading="eager" fetchpriority="high" decoding="async">
             </div>
           </div>
         </div>
