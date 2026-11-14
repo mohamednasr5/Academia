@@ -536,8 +536,23 @@ export async function changeAdminPassword(newPassword) {
   if (!newPassword || newPassword.length < 6) {
     throw new Error("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
   }
+  if (!isFirebaseOnline || !db) {
+    throw new Error("تعذر الاتصال بقاعدة البيانات؛ لم يتم تغيير رمز المرور. تحقق من اتصال Firebase ثم أعد المحاولة.");
+  }
+
   const hash = await sha256(newPassword);
-  await saveSettings({ adminPasswordHash: hash });
+  try {
+    await setDoc(doc(db, META_DOC, "state"), {
+      settings: { adminPasswordHash: hash }
+    }, { merge: true });
+  } catch (error) {
+    console.error("[Academia] Admin password database update failed:", error);
+    throw new Error("فشل حفظ رمز المرور في قاعدة البيانات. لم يتم تأكيد التغيير.");
+  }
+
+  const data = getLocalStorageData();
+  data.settings = { ...(data.settings || {}), adminPasswordHash: hash };
+  saveLocalStorageData(data);
   return true;
 }
 
