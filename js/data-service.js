@@ -463,9 +463,13 @@ export async function addActivity(icon, text) {
   const data = getLocalStorageData();
   if (!Array.isArray(data.activity)) data.activity = [];
   data.activity.unshift({ id: `act-${Date.now()}`, icon, text, time: new Date().toISOString() });
-  data.activity = data.activity.slice(0, 30); // keep last 30
-  saveLocalStorageData(data);
-  pushMetaToCloud(data);
+  data.activity = data.activity.slice(0, 30);
+  try {
+    await pushMetaToCloud(data);
+    saveLocalStorageData(data);
+  } catch (error) {
+    console.error("[Academia] Activity log cloud save failed:", error);
+  }
 }
 
 export function getRecentActivity(limit = 6) {
@@ -553,9 +557,9 @@ export async function changeAdminPassword(newPassword) {
 
   const hash = await sha256(newPassword);
   try {
-    await fb.setDoc(fb.doc(fb.db, fb.META_DOC, "state"), {
-      settings: { adminPasswordHash: hash }
-    }, { merge: true });
+    await fb.update(fb.ref(fb.db, `${fb.META_DOC}/state`), {
+      "settings/adminPasswordHash": hash
+    });
   } catch (error) {
     console.error("[Academia] Admin password database update failed:", error);
     throw new Error("فشل حفظ رمز المرور في قاعدة البيانات. لم يتم تأكيد التغيير.");
