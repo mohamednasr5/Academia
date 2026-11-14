@@ -1,18 +1,16 @@
 // =====================================================================
-// Firebase Configuration & Initialization — Academia Al-Ahmadia
-// Preserves the existing Firebase project (academia-e6d7b).
-// Adds: real-time cloud sync so admin changes appear on the public site.
+// Firebase Configuration — Academia Al-Ahmadia
+// Realtime Database is the single cloud database for academy records.
 // =====================================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import {
-  initializeFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc,
-  updateDoc, deleteDoc, onSnapshot, query, orderBy, writeBatch
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+  getDatabase, ref, get, set, update, remove, onValue
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
 
-// Existing project configuration (preserved from original repository)
 const firebaseConfig = {
   apiKey: "AIzaSyDJYIKnZNBMZuXhVAhP4irqjLuzP4jQ16g",
   authDomain: "academia-e6d7b.firebaseapp.com",
+  databaseURL: "https://academia-e6d7b-default-rtdb.firebaseio.com",
   projectId: "academia-e6d7b",
   storageBucket: "academia-e6d7b.firebasestorage.app",
   messagingSenderId: "679214276618",
@@ -26,24 +24,20 @@ let isFirebaseOnline = false;
 
 try {
   app = initializeApp(firebaseConfig);
-  // Use long polling for networks/proxies that interrupt Firestore's WebChannel transport.
-  db = initializeFirestore(app, { experimentalForceLongPolling: true });
+  db = getDatabase(app);
   isFirebaseOnline = true;
-  console.log("[Academia] Firebase initialized — cloud sync active for project academia-e6d7b");
+  console.log("[Academia] Firebase Realtime Database initialized — cloud sync active.");
 } catch (error) {
-  console.warn("[Academia] Firebase init warning — operating in offline/local mode:", error.message);
+  console.error("[Academia] Realtime Database initialization failed:", error);
 }
 
-// Collections that mirror the local data model
 const DATA_COLLECTIONS = [
   "players", "coaches", "trophies", "schedules",
   "upcomingMatches", "matchResults", "news", "registrationRequests"
 ];
-const META_DOC = "academy_meta"; // single doc holding tickerNews, playerOfTheDay, settings, activity
+const META_DOC = "academy_meta";
 
 export {
-  app, db, isFirebaseOnline,
-  DATA_COLLECTIONS, META_DOC,
-  collection, doc, getDocs, getDoc, setDoc, addDoc,
-  updateDoc, deleteDoc, onSnapshot, query, orderBy, writeBatch
+  app, db, isFirebaseOnline, DATA_COLLECTIONS, META_DOC,
+  ref, get, set, update, remove, onValue
 };
