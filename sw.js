@@ -9,7 +9,7 @@
 //   - Firebase / analytics / non-GET: bypass the SW entirely.
 // Handles SKIP_WAITING messages for instant updates.
 // =====================================================================
-const CACHE_VERSION = "ahmadia-academy-v3";
+const CACHE_VERSION = "ahmadia-academy-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -17,7 +17,6 @@ const APP_SHELL = [
   "./article.html",
   "./css/style.css",
   "./css/admin.css",
-  "./js/firebase-config.js",
   "./js/default-data.js",
   "./js/data-service.js",
   "./js/app.js",
@@ -61,17 +60,25 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (BYPASS_HOSTS.some((h) => url.hostname.includes(h))) return;
 
-  // HTML navigations: network-first (keeps academy data fresh)
+  // HTML navigations: stale-while-revalidate.
+  // Return the cached page immediately; refresh it quietly for the next visit.
   if (req.mode === "navigate") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match("./index.html")))
-    );
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_VERSION);
+      const cached = await cache.match(req) || await cache.match("./index.html");
+      const refresh = fetch(req).then(response => {
+        if (response && response.ok) cache.put(req, response.clone());
+        return response;
+      }).catch(() => null);
+      if (cached) {
+        event.waitUntil(refresh);
+        return cached;
+      }
+      return (await refresh) || new Response("الصفحة غير متاحة حالياً", {
+        status: 503,
+        headers: { "Content-Type": "text/plain; charset=utf-8" }
+      });
+    })());
     return;
   }
 
