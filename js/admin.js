@@ -6,7 +6,7 @@
 // =====================================================================
 import {
   getAllData, saveItem, deleteItem, saveTickerNews,
-  clearAllMockData, setPlayerOfTheDay, togglePlayerOfTheDay,
+  clearAllMockData, setPlayerOfTheDayByImage, togglePlayerOfTheDay,
   updateRequestStatus, convertRequestToPlayer,
   exportData, importData, resetDataToDefaults,
   getSettings, saveSettings, changeAdminPassword,
@@ -196,32 +196,52 @@ function formatRelativeTime(iso) {
 // PLAYER OF THE DAY
 // ============================================================
 function renderPotdTab(data) {
-  const select = document.getElementById("potd-player-select");
+  const imageInput = document.getElementById("potd-image-number");
+  const imagePreview = document.getElementById("potd-image-preview");
   const preview = document.getElementById("potd-current-preview");
   const indicator = document.getElementById("potd-status-indicator");
 
-  if (select) {
-    select.innerHTML = '<option value="">-- اختر لاعباً --</option>' +
-      (data.players || []).map(p => `<option value="${p.id}">${escapeHtml(p.name)} (#${p.number || ''} - ${escapeHtml(p.position || '')} - ${escapeHtml(p.category || '')})</option>`).join("");
+  const updateImagePreview = () => {
+    if (!imageInput || !imagePreview) return;
+    const raw = imageInput.value.trim();
+    const number = Number(raw);
+    if (raw === "" || !Number.isInteger(number) || number < 0 || number > 27) {
+      imagePreview.innerHTML = '<span style="color:var(--text-muted);">أدخل رقم صورة من 0 إلى 27 لعرض المعاينة</span>';
+      return;
+    }
+    const label = number === 0 ? "المدربة" : `اللاعب رقم ${number}`;
+    imagePreview.innerHTML = `
+      <img src="./images/players/${number}.png" alt="${label}"
+        style="width:120px;height:150px;object-fit:cover;object-position:top;border-radius:12px;border:2px solid var(--gold-primary);"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+      <span style="display:none;color:#ff8a8a;">تعذر تحميل الصورة ${number}.png</span>
+      <strong style="color:var(--gold-light);">${label}</strong>`;
+  };
+  if (imageInput && !imageInput.dataset.previewBound) {
+    imageInput.addEventListener("input", updateImagePreview);
+    imageInput.dataset.previewBound = "true";
   }
+  updateImagePreview();
 
   const potd = data.playerOfTheDay;
   if (!potd || !potd.active) {
     if (indicator) { indicator.className = "badge-status rejected"; indicator.textContent = "غير مفعل"; }
-    if (preview) preview.innerHTML = '<p style="text-align:center;color:var(--text-muted);">⚠️ لا يوجد نجم نشط حالياً. اختر لاعباً من النموذج أعلاه.</p>';
+    if (preview) preview.innerHTML = '<p style="text-align:center;color:var(--text-muted);">⚠️ لا يوجد نجم نشط حالياً. أدخل رقم الصورة من النموذج أعلاه.</p>';
     return;
   }
   if (indicator) { indicator.className = "badge-status approved"; indicator.textContent = "مفعل وظاهر على الموقع"; }
   const expires = new Date(potd.expiresAt);
   const diffH = Math.max(0, Math.round((expires - new Date()) / 3600000));
+  const imageNumber = Number.isInteger(Number(potd.playerImageNumber)) ? Number(potd.playerImageNumber) : null;
+  const imageSrc = imageNumber !== null ? `./images/players/${imageNumber}.png` : (potd.playerPhoto || "./images/logo.jpg");
   if (preview) {
     preview.innerHTML = `
       <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-        <img src="${potd.playerPhoto || './images/logo.jpg'}" alt="" style="width:78px;height:78px;border-radius:14px;border:3px solid var(--gold-primary);object-fit:cover;" onerror="this.src='./images/logo.jpg'">
+        <img src="${imageSrc}" alt="${escapeHtml(potd.playerName || "نجم اليوم")}" style="width:100px;height:130px;border-radius:14px;border:3px solid var(--gold-primary);object-fit:cover;object-position:top;" onerror="this.src='./images/logo.jpg'">
         <div style="flex:1;min-width:180px;">
           <h4 style="font-size:1.15rem;color:#fff;margin-bottom:4px;">👑 ${escapeHtml(potd.playerName)}</h4>
-          <p style="color:var(--text-muted);font-size:0.83rem;margin-bottom:6px;">${escapeHtml(potd.playerPosition || '')} | ${potd.playerAge || ''} سنة | التقييم: ${potd.rating}</p>
-          <p style="color:var(--gold-light);font-size:0.88rem;"><strong>السبب:</strong> ${escapeHtml(potd.reason || '')}</p>
+          <p style="color:var(--text-muted);font-size:0.83rem;margin-bottom:6px;">صورة الألبوم: ${imageNumber === null ? "صورة مخصصة" : imageNumber} | ${escapeHtml(potd.playerPosition || "")}</p>
+          <p style="color:var(--gold-light);font-size:0.88rem;"><strong>السبب:</strong> ${escapeHtml(potd.reason || "")}</p>
         </div>
         <div style="text-align:center;background:rgba(0,0,0,0.5);padding:10px 16px;border-radius:10px;border:1px solid var(--admin-border);">
           <div style="font-size:0.72rem;color:var(--text-muted);">متبقي</div>
@@ -237,12 +257,16 @@ function setupPotdForm() {
   if (form) {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const playerId = document.getElementById("potd-player-select").value;
+      const imageNumber = document.getElementById("potd-image-number").value.trim();
       const hours = parseInt(document.getElementById("potd-duration-select").value) || 24;
       const reason = document.getElementById("potd-reason-input").value.trim();
-      if (!playerId) { adminToast("يرجى اختيار لاعب أولاً", "error"); return; }
+      if (imageNumber === "" || !Number.isInteger(Number(imageNumber)) || Number(imageNumber) < 0 || Number(imageNumber) > 27) {
+        adminToast("أدخل رقم صورة صحيحاً من 0 إلى 27", "error");
+        return;
+      }
+      if (!reason) { adminToast("اكتب سبب التكريم أولاً", "error"); return; }
       try {
-        await setPlayerOfTheDay(playerId, hours, reason);
+        await setPlayerOfTheDayByImage(Number(imageNumber), hours, reason);
         adminToast(`⭐ تم تعيين نجم اليوم لمدة ${hours} ساعة!`, "success");
         form.reset();
         await loadAdminData();
