@@ -136,16 +136,23 @@ function animateCounter(id, target, suffix = "") {
   if (!el) return;
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (prefersReduced) { el.textContent = target + suffix; return; }
-  const duration = 1100;
+  const duration = 1800;
   const start = performance.now();
   const startVal = 0;
+  let frameId = 0;
+  el.textContent = "0" + suffix;
   function step(now) {
-    const p = Math.min((now - start) / duration, 1);
-    const eased = 1 - Math.pow(1 - p, 3);
-    el.textContent = Math.round(startVal + (target - startVal) * eased) + suffix;
-    if (p < 1) requestAnimationFrame(step);
+    const progress = Math.min((now - start) / duration, 1);
+    // Ease-out exponential: visible acceleration at the beginning, then a smooth settle.
+    const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+    const value = Math.round(startVal + (target - startVal) * eased);
+    el.textContent = value.toLocaleString("en-US") + suffix;
+    if (progress < 1) frameId = requestAnimationFrame(step);
+    else el.textContent = target.toLocaleString("en-US") + suffix;
   }
-  requestAnimationFrame(step);
+  if (el.dataset.counterFrame) cancelAnimationFrame(Number(el.dataset.counterFrame));
+  frameId = requestAnimationFrame(step);
+  el.dataset.counterFrame = String(frameId);
 }
 
 // ============================================================
