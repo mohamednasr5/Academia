@@ -23,8 +23,6 @@ export const DEFAULT_DATA = {
     developerName: "المهندس محمد حماد",
     developerFacebook: "https://www.facebook.com/en.mohamed.nasr",
     developerWhatsapp: "201279934735",
-    // Hashed admin password (SHA-256 of "ahmadia2026"). See data-service.js verifyAdminPassword.
-    adminPasswordHash: "bd6d75431128af5375ec4fcf054c179a73f71cf6216a01dabb28dbe8a16b2be7",
     foundedYear: "2020"
   },
 
