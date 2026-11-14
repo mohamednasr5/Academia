@@ -5,7 +5,7 @@
 // dashboard overview with recent activity.
 // =====================================================================
 import {
-  getAllData, saveItem, deleteItem, saveTickerNews,
+  getAllData, syncFromCloud, saveItem, deleteItem, saveTickerNews,
   clearAllMockData, setPlayerOfTheDay, togglePlayerOfTheDay,
   updateRequestStatus, convertRequestToPlayer,
   exportData, importData, resetDataToDefaults,
@@ -32,6 +32,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (isLoggedIn()) {
     showDashboard();
+    await syncFromCloud().catch(error => console.warn('[Academia] Admin cloud refresh failed:', error));
     await loadAdminData();
   }
 });
