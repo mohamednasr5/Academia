@@ -1,6 +1,6 @@
 // =====================================================================
 // Data Service — Academia Al-Ahmadia
-// Dual-engine persistence: instant LocalStorage + Firebase Firestore
+// Dual-engine persistence: instant LocalStorage + Firebase Realtime Database
 // cloud sync. Admin changes persist to the cloud and propagate to the
 // public website. Adds: image upload (compressed), settings, convert
 // request → player, hashed admin auth, activity log.
@@ -67,7 +67,7 @@ function saveLocalStorageData(data) {
 function migrateData(parsed) {
   const defaults = DEFAULT_DATA;
   // Remove legacy demo seed rows (numeric IDs such as player-1 / coach-2).
-  // Genuine records are rehydrated from Firestore during the cloud sync.
+  // Genuine records are rehydrated from Realtime Database during the cloud sync.
   const seededId = /^(players?|coaches?|news|trophies|schedules?|upcomingMatches|matchResults|registrationRequests|activity)-(?:[1-9]\d*)$/i;
   ["players", "coaches", "news", "trophies", "schedules", "upcomingMatches", "matchResults", "registrationRequests", "activity"].forEach(key => {
     if (Array.isArray(parsed[key])) parsed[key] = parsed[key].filter(item => !seededId.test(String(item?.id || "")));
@@ -133,121 +133,83 @@ function stripImages(data) {
 // Cloud writes are awaited. Never report success for a local-only change.
 async function requireFirebase() {
   const fb = await getFirebase();
-  if (!fb?.isFirebaseOnline || !fb.db) {
-    throw new Error("تعذر الاتصال بقاعدة بيانات الأكاديمية. لم يتم نشر التعديل؛ تحقق من اتصال Firebase ثم أعد المحاولة.");
-  }
+  if (!fb?.isFirebaseOnline || !fb.db) throw new Error("تعذر الاتصال بقاعدة Firebase Realtime Database. لم يتم نشر التعديل.");
   return fb;
 }
-
 async function pushItemToCloud(collectionName, item) {
   const fb = await requireFirebase();
-  try {
-    await fb.setDoc(fb.doc(fb.db, collectionName, String(item.id)), item);
-    return true;
-  } catch (error) {
-    console.error(`[Academia] Firestore write failed (${collectionName}):`, error);
-    throw new Error("فشل نشر البيانات على السحابة. لم يتم اعتماد التعديل؛ تحقق من صلاحيات Firestore وقواعد الأمان.");
+  try { await fb.set(fb.ref(fb.db, `${collectionName}/${item.id}`), item); return true; }
+  catch (error) {
+    console.error(`[Academia] Realtime Database write failed (${collectionName}):`, error);
+    throw new Error("فشل نشر البيانات في Realtime Database. راجع Database Rules.");
   }
 }
-
 async function pushMetaToCloud(data) {
   const fb = await requireFirebase();
   try {
-    await fb.setDoc(fb.doc(fb.db, fb.META_DOC, "state"), {
+    await fb.update(fb.ref(fb.db, `${fb.META_DOC}/state`), {
       tickerNews: data.tickerNews || [],
       playerOfTheDay: data.playerOfTheDay || { active: false },
       settings: data.settings || {},
       activity: data.activity || []
-    }, { merge: true });
+    });
     return true;
   } catch (error) {
-    console.error("[Academia] Firestore metadata write failed:", error);
-    throw new Error("فشل نشر التعديلات العامة على السحابة. لم يتم اعتمادها.");
+    console.error("[Academia] Realtime Database metadata write failed:", error);
+    throw new Error("فشل نشر البيانات العامة في Realtime Database.");
   }
 }
 
-// Pull ALL data from Firestore and merge into local (cloud wins for shared content)
+// Pull ALL data from Realtime Database and merge into local (cloud wins for shared content)
 export async function syncFromCloud() {
   const fb = await getFirebase();
   if (!fb?.isFirebaseOnline || !fb.db) {
-    console.error("[Academia] Firestore is not initialized; cloud data was not loaded.");
+    console.error("[Academia] Realtime Database is not initialized.");
     return null;
   }
-
   const timeout = (promise, label) => Promise.race([
     promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error(`Firestore request timed out after 30000ms: ${label}`)), 30000))
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Realtime Database timeout after 30000ms: ${label}`)), 30000))
   ]);
-
   try {
     const local = getLocalStorageData();
-
-    // Do not partially merge data. Every collection and the metadata document
-    // must be read successfully before local cache is replaced.
-    const collectionResults = await Promise.all(fb.DATA_COLLECTIONS.map(async colName => {
+    const results = await Promise.all(fb.DATA_COLLECTIONS.map(async name => {
       try {
-        const snap = await timeout(
-          fb.getDocs(fb.collection(fb.db, colName)),
-          `collection/${colName}`
-        );
-        const cloudItems = [];
-        snap.forEach(itemDoc => {
-          const value = itemDoc.data();
-          if (value && value.id) cloudItems.push(value);
-        });
-        return [colName, cloudItems];
+        const snapshot = await timeout(fb.get(fb.ref(fb.db, name)), name);
+        const value = snapshot.val() || {};
+        return [name, Object.entries(value).map(([key, item]) => ({
+          ...(item && typeof item === "object" ? item : {}),
+          id: item?.id || key
+        }))];
       } catch (error) {
-        console.error(`[Academia] Firestore read failed for collection "${colName}":`, error);
+        console.error(`[Academia] Realtime Database read failed for "${name}":`, error);
         throw error;
       }
     }));
-
-    let meta;
-    try {
-      const metaSnap = await timeout(
-        fb.getDoc(fb.doc(fb.db, fb.META_DOC, "state")),
-        `document/${fb.META_DOC}/state`
-      );
-      meta = metaSnap.exists() ? (metaSnap.data() || {}) : null;
-    } catch (error) {
-      console.error("[Academia] Firestore metadata read failed:", error);
-      throw error;
-    }
-
-    for (const [collectionName, items] of collectionResults) {
-      local[collectionName] = items;
-    }
-
+    const metaSnapshot = await timeout(fb.get(fb.ref(fb.db, `${fb.META_DOC}/state`)), "academy_meta/state");
+    const meta = metaSnapshot.val() || null;
+    for (const [name, records] of results) local[name] = records;
     if (!meta) {
       local.tickerNews = [];
       local.playerOfTheDay = { active: false };
       local.activity = [];
     } else {
       local.tickerNews = Array.isArray(meta.tickerNews) ? meta.tickerNews : [];
-      local.playerOfTheDay = meta.playerOfTheDay && typeof meta.playerOfTheDay === "object"
-        ? meta.playerOfTheDay : { active: false };
+      local.playerOfTheDay = meta.playerOfTheDay || { active: false };
       local.activity = Array.isArray(meta.activity) ? meta.activity : [];
-      if (meta.settings && typeof meta.settings === "object") {
-        local.settings = { ...local.settings, ...meta.settings };
-      }
+      if (meta.settings && typeof meta.settings === "object") local.settings = { ...local.settings, ...meta.settings };
     }
-
     saveLocalStorageData(local);
-    console.info("[Academia] Cloud sync completed: all Firestore collections and metadata were read successfully.");
+    console.info("[Academia] Realtime Database sync completed: all collections and metadata loaded.");
     window.dispatchEvent(new CustomEvent("academia-cloud-sync", { detail: { ok: true } }));
     return local;
   } catch (error) {
-    console.error("[Academia] Cloud sync failed. Local cache was NOT replaced; Firestore remains unverified.", error);
-    window.dispatchEvent(new CustomEvent("academia-cloud-sync", {
-      detail: { ok: false, message: error.message || "Unknown Firestore error" }
-    }));
+    console.error("[Academia] Realtime Database sync failed; local cache was not replaced.", error);
+    window.dispatchEvent(new CustomEvent("academia-cloud-sync", { detail: { ok: false, message: error.message || "Unknown Realtime Database error" } }));
     return null;
   }
 }
 
-// ============================================================
-// INITIALIZATION
-// ============================================================
 export async function initDataService() {
   checkPlayerOfTheDayExpiration();
   // Kick off non-blocking cloud pull so admin edits appear on the public site
@@ -303,7 +265,7 @@ export async function saveItem(collectionName, item) {
   if (!saved.id) saved.id = `${collectionName}-${Date.now()}`;
   saved.updatedAt = new Date().toISOString();
 
-  // Commit to Firestore first. Local cache is updated only after cloud confirms.
+  // Commit to Realtime Database first. Local cache is updated only after cloud confirms.
   await pushItemToCloud(collectionName, saved);
   const idx = data[collectionName].findIndex(i => String(i.id) === String(saved.id));
   if (idx >= 0) data[collectionName][idx] = { ...data[collectionName][idx], ...saved };
@@ -315,9 +277,9 @@ export async function saveItem(collectionName, item) {
 export async function deleteItem(collectionName, id) {
   const fb = await requireFirebase();
   try {
-    await fb.deleteDoc(fb.doc(fb.db, collectionName, String(id)));
+    await fb.remove(fb.ref(fb.db, `${collectionName}/${id}`));
   } catch (error) {
-    console.error(`[Academia] Firestore delete failed (${collectionName}):`, error);
+    console.error(`[Academia] Realtime Database delete failed (${collectionName}):`, error);
     throw new Error("فشل حذف السجل من السحابة؛ لم يتم تنفيذ الحذف محلياً.");
   }
   const data = getLocalStorageData();
@@ -422,7 +384,7 @@ export async function submitRegistrationRequest(formData) {
   };
   data.registrationRequests.unshift(newRequest);
   saveLocalStorageData(data);
-  pushItemToCloud("registrationRequests", newRequest);
+  await pushItemToCloud("registrationRequests", newRequest);
   addActivity("📝", `استلام طلب انضمام جديد: ${newRequest.playerName}`);
   return newRequest;
 }
@@ -434,7 +396,7 @@ export async function updateRequestStatus(requestId, status) {
     if (item) {
       item.status = status;
       saveLocalStorageData(data);
-      pushItemToCloud("registrationRequests", item);
+      await pushItemToCloud("registrationRequests", item);
       addActivity(status === "approved" ? "✅" : "❌", `${status === "approved" ? "قبول" : "رفض"} طلب ${item.playerName}`);
     }
   }
@@ -453,7 +415,7 @@ export async function convertRequestToPlayer(requestId, extra = {}) {
   if (existing) {
     req.status = "approved";
     saveLocalStorageData(data);
-    pushItemToCloud("registrationRequests", req);
+    await pushItemToCloud("registrationRequests", req);
     return { player: existing, duplicated: false };
   }
 
@@ -479,8 +441,8 @@ export async function convertRequestToPlayer(requestId, extra = {}) {
 
   req.status = "approved";
   saveLocalStorageData(data);
-  pushItemToCloud("players", newPlayer);
-  pushItemToCloud("registrationRequests", req);
+  await pushItemToCloud("players", newPlayer);
+  await pushItemToCloud("registrationRequests", req);
   addActivity("🏃", `تحويل ${req.playerName} إلى لاعب مسجل`);
   return { player: newPlayer, duplicated: false };
 }
@@ -497,7 +459,7 @@ function guessCategoryFromAge(age) {
 // ============================================================
 // ACTIVITY LOG
 // ============================================================
-export function addActivity(icon, text) {
+export async function addActivity(icon, text) {
   const data = getLocalStorageData();
   if (!Array.isArray(data.activity)) data.activity = [];
   data.activity.unshift({ id: `act-${Date.now()}`, icon, text, time: new Date().toISOString() });
