@@ -756,23 +756,37 @@ function openTrophyModal(trophy = null) {
 // ============================================================
 function openScheduleModal(sch = null) {
   const isEdit = !!sch;
+  const oldDay = isEdit ? (sch.day || sch.days || "") : "";
+  const knownDays = ["السبت","الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة"];
+  const selectedDay = knownDays.includes(oldDay) ? oldDay : "";
+  const oldTimes = String(isEdit ? (sch.time || "") : "").match(/(\\d{1,2}:\\d{2})/g) || [];
+  const startValue = isEdit ? (sch.startTime || oldTimes[0] || "") : "";
+  const endValue = isEdit ? (sch.endTime || oldTimes[1] || "") : "";
+  const dayOptions = knownDays.map(day => `<option value="${day}" ${selectedDay === day ? "selected" : ""}>${day}</option>`).join("");
   const body = `
     <form id="form-sch-crud">
-      <div class="admin-form-group"><label class="admin-label">الفئة العمرية <span class="req">*</span></label><input type="text" id="m-s-cat" class="admin-input" value="${isEdit ? escapeHtml(sch.category) : ''}" placeholder="مواليد 2012 - 2014" required></div>
-      <div class="admin-form-group"><label class="admin-label">أيام التدريب <span class="req">*</span></label><input type="text" id="m-s-days" class="admin-input" value="${isEdit ? escapeHtml(sch.days) : ''}" placeholder="السبت - الإثنين - الأربعاء" required></div>
-      <div class="admin-form-group"><label class="admin-label">التوقيت <span class="req">*</span></label><input type="text" id="m-s-time" class="admin-input" value="${isEdit ? escapeHtml(sch.time) : ''}" placeholder="05:00 م - 06:30 م" required></div>
-      <div class="admin-form-group"><label class="admin-label">الملعب <span class="req">*</span></label><input type="text" id="m-s-field" class="admin-input" value="${isEdit ? escapeHtml(sch.field) : 'الملعب الرئيسي لمركز شباب الأحمدية'}" required></div>
-      <div class="admin-form-group"><label class="admin-label">المدرب المسؤول</label><input type="text" id="m-s-coach" class="admin-input" value="${isEdit ? escapeHtml(sch.coach || '') : ''}" placeholder="كابتن أحمد مصطفى"></div>
-      <button type="submit" class="btn-admin-action" style="width:100%;background:var(--gold-gradient);color:#07110f;font-weight:800;padding:12px;border:none;">🕒 ${isEdit ? 'حفظ التعديلات' : 'إضافة الموعد'}</button>
+      <div class="admin-form-group"><label class="admin-label">الفئة العمرية <span class="req">*</span></label><input type="text" id="m-s-cat" class="admin-input" value="${isEdit ? escapeHtml(sch.category || "") : ""}" placeholder="مواليد 2012 - 2014" required></div>
+      <div class="admin-form-group"><label class="admin-label">يوم التدريب <span class="req">*</span></label><select id="m-s-day" class="admin-input" required><option value="">اختر اليوم</option>${dayOptions}</select></div>
+      <div class="admin-form-group"><label class="admin-label">التاريخ المحدد (اختياري)</label><input type="date" id="m-s-date" class="admin-input" value="${isEdit ? escapeHtml(sch.date || "") : ""}"></div>
+      <div class="admin-form-group"><label class="admin-label">ساعة البداية <span class="req">*</span></label><input type="time" id="m-s-start" class="admin-input" value="${escapeHtml(startValue)}" required></div>
+      <div class="admin-form-group"><label class="admin-label">ساعة النهاية <span class="req">*</span></label><input type="time" id="m-s-end" class="admin-input" value="${escapeHtml(endValue)}" required></div>
+      <div class="admin-form-group"><label class="admin-label">الملعب <span class="req">*</span></label><input type="text" id="m-s-field" class="admin-input" value="${isEdit ? escapeHtml(sch.field || "") : "الملعب الرئيسي لمركز شباب الأحمدية"}" required></div>
+      <div class="admin-form-group"><label class="admin-label">المدرب المسؤول</label><input type="text" id="m-s-coach" class="admin-input" value="${isEdit ? escapeHtml(sch.coach || "") : ""}" placeholder="اسم المدرب"></div>
+      <button type="submit" class="btn-admin-action" style="width:100%;background:var(--gold-gradient);color:#07110f;font-weight:800;padding:12px;border:none;">🕒 ${isEdit ? "حفظ التعديلات" : "إضافة الموعد"}</button>
     </form>`;
   showAdminModal(isEdit ? "تعديل موعد تدريب" : "إضافة موعد تدريب جديد", body);
   document.getElementById("form-sch-crud").onsubmit = async (e) => {
     e.preventDefault();
+    const day = document.getElementById("m-s-day").value;
+    const date = document.getElementById("m-s-date").value;
+    const startTime = document.getElementById("m-s-start").value;
+    const endTime = document.getElementById("m-s-end").value;
+    if (endTime <= startTime) { adminToast("ساعة النهاية يجب أن تكون بعد ساعة البداية.", "error"); return; }
     const item = {
       id: isEdit ? sch.id : `sch-${Date.now()}`,
       category: document.getElementById("m-s-cat").value.trim(),
-      days: document.getElementById("m-s-days").value.trim(),
-      time: document.getElementById("m-s-time").value.trim(),
+      day, days: day, date, startTime, endTime,
+      time: `${startTime} - ${endTime}`,
       field: document.getElementById("m-s-field").value.trim(),
       coach: document.getElementById("m-s-coach").value.trim()
     };
@@ -990,18 +1004,23 @@ function renderSchedulesTable(schedules) {
   const tbody = document.getElementById("table-schedules-body");
   if (!tbody) return;
   if (!schedules.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted);">لا توجد مواعيد.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-muted);">لا توجد مواعيد.</td></tr>';
     return;
   }
-  tbody.innerHTML = schedules.map(s => `
+  tbody.innerHTML = schedules.map(s => {
+    const day = s.day || s.days || "—";
+    const time = s.startTime && s.endTime ? `${s.startTime} - ${s.endTime}` : (s.time || "—");
+    return `
     <tr>
-      <td><strong>${escapeHtml(s.category)}</strong></td>
-      <td>${escapeHtml(s.days)}</td>
-      <td><span style="color:var(--gold-light);">${escapeHtml(s.time)}</span></td>
-      <td>${escapeHtml(s.field)}</td>
-      <td>${escapeHtml(s.coach || '')}</td>
+      <td><strong>${escapeHtml(s.category || "—")}</strong></td>
+      <td>${escapeHtml(day)}</td>
+      <td>${escapeHtml(s.date || "أسبوعي")}</td>
+      <td><span style="color:var(--gold-light);">${escapeHtml(time)}</span></td>
+      <td>${escapeHtml(s.field || "—")}</td>
+      <td>${escapeHtml(s.coach || "—")}</td>
       <td><button class="btn-action-icon edit" data-action="edit-schedule" data-id="${s.id}">✏️</button><button class="btn-action-icon delete" data-action="delete-schedule" data-id="${s.id}">🗑️</button></td>
-    </tr>`).join("");
+    </tr>`;
+  }).join("");
   wireRowActions(tbody);
 }
 
