@@ -353,9 +353,9 @@ function renderSchedules(schedules) {
   }
   c.innerHTML = schedules.map(sch => `
     <div class="schedule-card">
-      <div class="schedule-cat"><span>⚽</span> ${escapeHtml(sch.category)}</div>
-      <div class="schedule-detail-row"><div class="schedule-icon-pill">📅</div><div><div style="font-size:0.78rem;color:var(--text-muted);">أيام التدريب</div><div style="font-weight:700;">${escapeHtml(sch.days)}</div></div></div>
-      <div class="schedule-detail-row"><div class="schedule-icon-pill">🕒</div><div><div style="font-size:0.78rem;color:var(--text-muted);">التوقيت</div><div style="font-weight:700;color:var(--gold-light);">${escapeHtml(sch.time)}</div></div></div>
+      <div class="schedule-cat"><span>⚽</span> ${escapeHtml(sch.category || "تدريب كرة قدم")}</div>
+      <div class="schedule-detail-row"><div class="schedule-icon-pill">📅</div><div><div style="font-size:0.78rem;color:var(--text-muted);">${sch.date ? "التاريخ" : "يوم التدريب"}</div><div style="font-weight:700;">${escapeHtml(sch.date || sch.day || sch.days || "—")}</div></div></div>
+      <div class="schedule-detail-row"><div class="schedule-icon-pill">🕒</div><div><div style="font-size:0.78rem;color:var(--text-muted);">التوقيت</div><div style="font-weight:700;color:var(--gold-light);">${escapeHtml(sch.startTime && sch.endTime ? `${sch.startTime} - ${sch.endTime}` : (sch.time || "—"))}</div></div></div>
       <div class="schedule-detail-row"><div class="schedule-icon-pill">🏟️</div><div><div style="font-size:0.78rem;color:var(--text-muted);">الملعب</div><div style="font-weight:600;">${escapeHtml(sch.field)}</div></div></div>
       <div class="schedule-detail-row"><div class="schedule-icon-pill">👔</div><div><div style="font-size:0.78rem;color:var(--text-muted);">المدرب المسؤول</div><div style="font-weight:600;">${escapeHtml(sch.coach || 'كابتن الأكاديمية')}</div></div></div>
     </div>`).join("");
